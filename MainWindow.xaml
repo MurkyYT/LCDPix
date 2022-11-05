@@ -5,23 +5,83 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LCDPix"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="LCDPix" Height="450" Width="800" KeyDown="Window_KeyDown" Closing="Window_Closing">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <DockPanel Grid.Row ="0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition/>
+            <ColumnDefinition Width="180"/>
+        </Grid.ColumnDefinitions>
+        <DockPanel Grid.Row ="0" Grid.ColumnSpan="3">
             <Menu DockPanel.Dock="Top">
                 <MenuItem Header="_File">
                     <MenuItem x:Name="NewFile" Header="_New" Click="NewFile_Click" />
                     <MenuItem x:Name="OpenFile" Header="_Open" Click="OpenFile_Click" />
                     <MenuItem x:Name="SaveFile" Header="_Save" Click="SaveFile_Click" />
+                    <MenuItem x:Name="CloseFile" Header="_Close" Click="CloseFile_Click" />
                     <Separator />
                     <MenuItem x:Name="ExitButton" Header="_Exit" Click="ExitButton_Click" />
                 </MenuItem>
+                <MenuItem Header="_Export">
+                    <MenuItem x:Name="ExportAsPNG" Header="Export as PNG" Click="ExportAsPNG_Click" />
+                    <MenuItem x:Name="ExportAsBMP" Header="Export as BMP" Click="ExportAsBMP_Click"/>
+                    <MenuItem x:Name="ExportAsJPG" Header="Export as JPG" Click="ExportAsJPG_Click" />
+                </MenuItem>
+                <MenuItem Header="_Import">
+                    <MenuItem x:Name="ImportPNG" Header="Import png file" Click="ImportPNG_Click"  />
+                </MenuItem>
             </Menu>
         </DockPanel>
-        <Canvas Grid.Row ="1" x:Name="Screen" MouseLeftButtonDown="Screen_MouseLeftButtonDown"/>
+        <ScrollViewer Grid.RowSpan="2" x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="White" Grid.Row="1" Grid.Column="1">
+            <Canvas x:Name="MapCanvas">
+                <Canvas  x:Name="Screen" MouseLeftButtonDown="Screen_MouseLeftButtonDown" MouseMove="Screen_MouseMove"/>
+            </Canvas>
+        </ScrollViewer>
+        <GridSplitter Grid.RowSpan="2" Grid.Row="1" Grid.Column="1" Width="5"/>
+        <StackPanel Grid.RowSpan="2" Grid.Row="1" Grid.Column="2" Background="#FFC3BFBF">
+            <Image x:Name="ColorPicker" Source="/rgbSpectrum.jpg" MouseMove="ColorPicker_MouseMove" VerticalAlignment="Top" MouseDown="ColorPicker_MouseDown"/>
+            <TextBlock x:Name="selectedColor" VerticalAlignment="Top"/>
+            <TextBlock Text="Selected Color:"/>
+            <TextBlock x:Name="nowColor" VerticalAlignment="Top" Background="Black"></TextBlock>
+            <TextBlock Text="R:"/>
+            <TextBox x:Name="RedValue" TextChanged="RedValue_TextChanged" PreviewTextInput="RedValue_PreviewTextInput" MaxLength="3" Text="0"></TextBox>
+            <TextBlock Text="G:"/>
+            <TextBox x:Name="GreenValue" TextChanged="GreenValue_TextChanged" PreviewTextInput="GreenValue_PreviewTextInput" MaxLength="3" Text="0"></TextBox>
+            <TextBlock Text="B:"/>
+            <TextBox x:Name="BlueValue" TextChanged="BlueValue_TextChanged" PreviewTextInput="BlueValue_PreviewTextInput" MaxLength="3" Text="0"/>
+        </StackPanel>
+        <TextBlock x:Name="ZoomInAmount" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="2" Text="Zoom: " HorizontalAlignment="Left"/>
+        <TextBlock x:Name="SelectedModeText" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="2" Text="Selected Mode:" HorizontalAlignment="Left"/>
+        <StackPanel  Grid.RowSpan="2" Grid.Row="1" Grid.Column="0" Background="#FFC3BFBF">
+            <Button x:Name="CurosrSelectButton" Click="CurosrSelectButton_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="/cursor-solid.png"/>
+                </Button.Background>
+                <Image Source="/cursor-solid.png"/>
+            </Button>
+            <Button x:Name="EraserSelectButton" Click="EraserSelectButton_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="/eraser-icon.png"/>
+                </Button.Background>
+                <Image Source="/eraser-icon.png"/>
+            </Button>
+            <Button x:Name="PipetteSelectorButton" Click="PipetteSelectorButton_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="/pipette-icon.png"/>
+                </Button.Background>
+                <Image Source="/pipette-icon.png"/>
+            </Button>
+            <Button x:Name="FillSelectorButton" Click="FillSelectorButton_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="/fill-icon.png"/>
+                </Button.Background>
+                <Image Source="/fill-icon.png"/>
+            </Button>
+        </StackPanel>
     </Grid>
 </Window>
