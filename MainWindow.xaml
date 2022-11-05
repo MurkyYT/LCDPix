@@ -27,6 +27,9 @@
                     <Separator />
                     <MenuItem x:Name="ExitButton" Header="_Exit" Click="ExitButton_Click" />
                 </MenuItem>
+                <MenuItem Header="_View">
+                    <MenuItem x:Name="ShowGridCheck" Header="Show Grid" Click="ShowGridCheck_Click" IsCheckable="True" />
+                </MenuItem>
                 <MenuItem Header="_Export">
                     <MenuItem x:Name="ExportAsPNG" Header="Export as PNG" Click="ExportAsPNG_Click" />
                     <MenuItem x:Name="ExportAsBMP" Header="Export as BMP" Click="ExportAsBMP_Click"/>
@@ -39,12 +42,12 @@
         </DockPanel>
         <ScrollViewer Grid.RowSpan="2" x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="White" Grid.Row="1" Grid.Column="1">
             <Canvas x:Name="MapCanvas">
-                <Canvas  x:Name="Screen" MouseLeftButtonDown="Screen_MouseLeftButtonDown" MouseMove="Screen_MouseMove"/>
+                <Canvas  x:Name="Screen" MouseLeftButtonDown="Screen_MouseLeftButtonDown" MouseMove="Screen_MouseMove" MouseUp="Screen_MouseUp"/>
             </Canvas>
         </ScrollViewer>
         <GridSplitter Grid.RowSpan="2" Grid.Row="1" Grid.Column="1" Width="5"/>
         <StackPanel Grid.RowSpan="2" Grid.Row="1" Grid.Column="2" Background="#FFC3BFBF">
-            <Image x:Name="ColorPicker" Source="/rgbSpectrum.jpg" MouseMove="ColorPicker_MouseMove" VerticalAlignment="Top" MouseDown="ColorPicker_MouseDown"/>
+            <Image x:Name="ColorPicker" Source="/rgbSpectrum.jpg" MouseMove="ColorPicker_MouseMove" VerticalAlignment="Top" MouseUp="ColorPicker_Up" MouseDown="ColorPicker_MouseDown"/>
             <TextBlock x:Name="selectedColor" VerticalAlignment="Top"/>
             <TextBlock Text="Selected Color:"/>
             <TextBlock x:Name="nowColor" VerticalAlignment="Top" Background="Black"></TextBlock>
@@ -81,6 +84,12 @@
                     <ImageBrush ImageSource="/fill-icon.png"/>
                 </Button.Background>
                 <Image Source="/fill-icon.png"/>
+            </Button>
+            <Button x:Name="AreaSelectionButton" Click="AreaSelectionButton_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="/selection.png"/>
+                </Button.Background>
+                <Image Source="/selection.png" Width="12" Height="12"/>
             </Button>
         </StackPanel>
     </Grid>

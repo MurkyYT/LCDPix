@@ -10,9 +10,9 @@ namespace LCDPix
 {
     internal class ColorChange
     {
-        MainWindow.PixelInfo pixelInfo;
-        Color oldColor;
-        internal bool firstTime { get; }
+        internal MainWindow.PixelInfo pixelInfo { get; }
+        internal Color oldColor { get; }
+        internal bool firstTime { get; set; }
         public ColorChange(MainWindow.PixelInfo pixelInfo, Color oldColor, bool firstTime)
         {
             this.pixelInfo = pixelInfo;
