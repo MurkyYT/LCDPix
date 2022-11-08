@@ -25,24 +25,28 @@
                     <MenuItem x:Name="SaveFile" Header="_Save" Click="SaveFile_Click" />
                     <MenuItem x:Name="CloseFile" Header="_Close" Click="CloseFile_Click" />
                     <Separator />
+                    <MenuItem Header="_Export">
+                        <MenuItem x:Name="ExportAsPNG" Header="Export as PNG" Click="ExportAsPNG_Click" />
+                        <MenuItem x:Name="ExportAsBMP" Header="Export as BMP" Click="ExportAsBMP_Click"/>
+                        <MenuItem x:Name="ExportAsJPG" Header="Export as JPG" Click="ExportAsJPG_Click" />
+                    </MenuItem>
+                    <MenuItem Header="_Import">
+                        <MenuItem x:Name="ImportPNG" Header="Import png file" Click="ImportPNG_Click"  />
+                    </MenuItem>
+                    <Separator />
                     <MenuItem x:Name="ExitButton" Header="_Exit" Click="ExitButton_Click" />
+                </MenuItem>
+                <MenuItem Header="_Script">
+                    <MenuItem x:Name="OpenScript" Header="_Open" Click="OpenScript_Click"/>
                 </MenuItem>
                 <MenuItem Header="_View">
                     <MenuItem x:Name="ShowGridCheck" Header="Show Grid" Click="ShowGridCheck_Click" IsCheckable="True" />
-                </MenuItem>
-                <MenuItem Header="_Export">
-                    <MenuItem x:Name="ExportAsPNG" Header="Export as PNG" Click="ExportAsPNG_Click" />
-                    <MenuItem x:Name="ExportAsBMP" Header="Export as BMP" Click="ExportAsBMP_Click"/>
-                    <MenuItem x:Name="ExportAsJPG" Header="Export as JPG" Click="ExportAsJPG_Click" />
-                </MenuItem>
-                <MenuItem Header="_Import">
-                    <MenuItem x:Name="ImportPNG" Header="Import png file" Click="ImportPNG_Click"  />
                 </MenuItem>
             </Menu>
         </DockPanel>
         <ScrollViewer Grid.RowSpan="2" x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="White" Grid.Row="1" Grid.Column="1">
             <Canvas x:Name="MapCanvas">
-                <Canvas  x:Name="Screen" MouseLeftButtonDown="Screen_MouseLeftButtonDown" MouseMove="Screen_MouseMove" MouseUp="Screen_MouseUp"/>
+                <Canvas  x:Name="Screen" MouseLeftButtonDown="Screen_MouseLeftButtonDown" MouseMove="Screen_MouseMove" MouseUp="Screen_MouseUp" MouseLeave="Screen_MouseLeave" MouseLeftButtonUp="Screen_MouseLeftButtonUp" Background="White"/>
             </Canvas>
         </ScrollViewer>
         <GridSplitter Grid.RowSpan="2" Grid.Row="1" Grid.Column="1" Width="5"/>
@@ -90,6 +94,24 @@
                     <ImageBrush ImageSource="/selection.png"/>
                 </Button.Background>
                 <Image Source="/selection.png" Width="12" Height="12"/>
+            </Button>
+            <Button x:Name="LineSelectionButton" Click="LineSelectionButton_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="/line-icon.png"/>
+                </Button.Background>
+                <Image Source="/line-icon.png" Width="12" Height="12"/>
+            </Button>
+            <Button x:Name="EllipseSelectionButton" Click="EllipseSelectionButton_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="/ellipse-icon.png"/>
+                </Button.Background>
+                <Image Source="/ellipse-icon.png" Width="12" Height="12"/>
+            </Button>
+            <Button x:Name="RectangleSelectionButton" Click="RectangleSelectionButton_Click">
+                <Button.Background>
+                    <ImageBrush ImageSource="/rectangle-icon.png"/>
+                </Button.Background>
+                <Image Source="/rectangle-icon.png" Width="12" Height="12"/>
             </Button>
         </StackPanel>
     </Grid>

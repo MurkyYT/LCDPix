@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -15,6 +16,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
@@ -48,8 +50,8 @@ namespace LCDPix
                 this.Width = Width;
                 this.Height = Height;
                 this.FillColor = fillColor;
-                this.TopLeft = new Point(x * Width, y * Width);
-                this.TopRight = new Point(x * Width + Width, y * Width);
+                this.TopLeft = new Point(x * Width, y * Height);
+                this.TopRight = new Point(x * Width + Width, y * Height);
                 this.BottomLeft = new Point(x * Width, y * Height + Height);
                 this.BottomRight = new Point(x * Width + Width, y * Height + Height);
                 this.PixelRect = null;
@@ -69,6 +71,9 @@ namespace LCDPix
         bool MouseLeftPressedReally = false;
         Point areaSelectionStartingPoint = new Point();
         Rectangle selection = null;
+        Line lineSelection = null;
+        Ellipse ellipseSelection = null;
+        Rectangle rectSelection = null;
         List<PixelInfo> selectedPixels = new List<PixelInfo>();
         Stack<ColorChange> undoStack = new Stack<ColorChange>();
         Stack<ColorChange> redoStack = new Stack<ColorChange>();
@@ -224,7 +229,8 @@ namespace LCDPix
                 StrokeThickness = showGrid? 1 : 0,
                 Width = Width + 1,
                 Height = Height + 1,
-            };
+                //IsHitTestVisible = false,
+        };
             Canvas.SetLeft(rect, x * Width);
             Canvas.SetTop(rect, y * Height);
             Screen.Children.Add(rect);
@@ -242,11 +248,52 @@ namespace LCDPix
                 StrokeThickness = 2.5f,
                 Width = Width + 1,
                 Height = Height + 1,
+                IsHitTestVisible = false,
+        };
+            Canvas.SetLeft(rect, x);
+            Canvas.SetTop(rect, y);
+            Screen.Children.Add(rect);
+            return rect;
+        }
+        Ellipse DrawDottedEllipse(double x, double y, double Width, double Height)
+        {
+            Ellipse rect = new Ellipse()
+            {
+                StrokeDashArray = new DoubleCollection()
+                {
+                    2
+                },
+                Stroke = new SolidColorBrush(Colors.Red),
+                StrokeThickness = 2.5f,
+                Width = Width + 1,
+                Height = Height + 1,
+                IsHitTestVisible = false,
             };
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
             Screen.Children.Add(rect);
             return rect;
+        }
+        Line DrawDottedLine(double x1, double y1, double x2, double y2)
+        {
+            Line line = new Line()
+            {
+                StrokeDashArray = new DoubleCollection()
+                {
+                    2
+                },
+                Stroke = new SolidColorBrush(Colors.Red),
+                StrokeThickness = 2.5f,
+                IsHitTestVisible = false,
+                X1 = x1,
+                Y1 = y1,
+                X2 = x2,
+                Y2 = y2,
+            };
+            Canvas.SetLeft(line, 0);
+            Canvas.SetTop(line, 0);
+            Screen.Children.Add(line);
+            return line;
         }
         private void Screen_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
@@ -286,12 +333,204 @@ namespace LCDPix
                         FloodFill(pixel.X, pixel.Y, pixel.Width, pixel.Height, color, fillColor, true,false);
                     break;
                 case "Area Selection":
-                    if (!firstTime)
+                    if (!firstTime && Mouse.LeftButton == MouseButtonState.Pressed) 
+                    {
+                        Screen.Children.Remove(selection);
+                        Point endingPoint = e;
+                        double minx = Math.Min(endingPoint.X, areaSelectionStartingPoint.X);
+                        double miny = Math.Min(endingPoint.Y, areaSelectionStartingPoint.Y);
+                        double maxx = Math.Max(endingPoint.X, areaSelectionStartingPoint.X);
+                        double maxy = Math.Max(endingPoint.Y, areaSelectionStartingPoint.Y);
+                        PixelInfo topLeft = GetPixel(new Point(minx, miny));
+                        PixelInfo bottomRight = GetPixel(new Point(maxx, maxy));
+                        selection = DrawDottedRectangle(topLeft.X * topLeft.Width * zoom, topLeft.Y * topLeft.Height * zoom,
+                                (bottomRight.X - topLeft.X + 1) * topLeft.Width * zoom,
+                                (bottomRight.Y - topLeft.Y + 1) * topLeft.Height * zoom);
                         break;
+                    }
+                    areaSelectionStartingPoint = e;
+                    if(selectedPixels.Count == 0)
+                        RemoveSelection();
+                    break;
+                case "Line":
+                    if (!firstTime && Mouse.LeftButton == MouseButtonState.Pressed)
+                    {
+                        Screen.Children.Remove(lineSelection);
+                        Point endingPoint = e;
+                        lineSelection = DrawDottedLine(areaSelectionStartingPoint.X, areaSelectionStartingPoint.Y, endingPoint.X-1, endingPoint.Y-1);
+                        break;
+                    }
+                    areaSelectionStartingPoint = e;
+                    break;
+                case "Ellipse":
+                    if (!firstTime && Mouse.LeftButton == MouseButtonState.Pressed)
+                    {
+                        Screen.Children.Remove(ellipseSelection);
+                        Point endingPoint = e;
+                        double minx = Math.Min(endingPoint.X, areaSelectionStartingPoint.X);
+                        double miny = Math.Min(endingPoint.Y, areaSelectionStartingPoint.Y);
+                        double maxx = Math.Max(endingPoint.X, areaSelectionStartingPoint.X);
+                        double maxy = Math.Max(endingPoint.Y, areaSelectionStartingPoint.Y);
+                        PixelInfo topLeft = GetPixel(new Point(minx, miny));
+                        PixelInfo bottomRight = GetPixel(new Point(maxx, maxy));
+                        ellipseSelection = DrawDottedEllipse(topLeft.X * topLeft.Width * zoom, topLeft.Y * topLeft.Height * zoom,
+                                (bottomRight.X - topLeft.X + 1) * topLeft.Width * zoom,
+                                (bottomRight.Y - topLeft.Y + 1) * topLeft.Height * zoom);
+                        break;
+                    }
+                    areaSelectionStartingPoint = e;
+                    break;
+                case "Rectangle":
+                    if (!firstTime && Mouse.LeftButton == MouseButtonState.Pressed)
+                    {
+                        Screen.Children.Remove(rectSelection);
+                        Point endingPoint = e;
+                        double minx = Math.Min(endingPoint.X, areaSelectionStartingPoint.X);
+                        double miny = Math.Min(endingPoint.Y, areaSelectionStartingPoint.Y);
+                        double maxx = Math.Max(endingPoint.X, areaSelectionStartingPoint.X);
+                        double maxy = Math.Max(endingPoint.Y, areaSelectionStartingPoint.Y);
+                        PixelInfo topLeft = GetPixel(new Point(minx, miny));
+                        PixelInfo bottomRight = GetPixel(new Point(maxx, maxy));
+                        rectSelection = DrawDottedRectangle(topLeft.X * topLeft.Width * zoom, topLeft.Y * topLeft.Height * zoom,
+                                (bottomRight.X - topLeft.X + 1) * topLeft.Width * zoom,
+                                (bottomRight.Y - topLeft.Y + 1) * topLeft.Height * zoom);
+                        break;
+                    }
                     areaSelectionStartingPoint = e;
                     break;
             }
             
+        }
+        public void Line(int x, int y, int x2, int y2,bool firstTime)
+        {
+            int w = x2 - x;
+            int h = y2 - y;
+            int dx1 = 0, dy1 = 0, dx2 = 0, dy2 = 0;
+            if (w < 0) dx1 = -1; else if (w > 0) dx1 = 1;
+            if (h < 0) dy1 = -1; else if (h > 0) dy1 = 1;
+            if (w < 0) dx2 = -1; else if (w > 0) dx2 = 1;
+            int longest = Math.Abs(w);
+            int shortest = Math.Abs(h);
+            if (!(longest > shortest))
+            {
+                longest = Math.Abs(h);
+                shortest = Math.Abs(w);
+                if (h < 0) dy2 = -1; else if (h > 0) dy2 = 1;
+                dx2 = 0;
+            }
+            int numerator = longest >> 1;
+            SolidColorBrush newBrush = (SolidColorBrush)nowColor.Background;
+            for (int i = 0; i <= longest; i++)
+            {
+                PixelInfo pixel = ChangePixelColor(new Point(x,y),Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                numerator += shortest;
+                if (!(numerator < longest))
+                {
+                    numerator -= longest;
+                    x += dx1;
+                    y += dy1;
+                }
+                else
+                {
+                    x += dx2;
+                    y += dy2;
+                }
+                if(pixel != null)
+                    firstTime = false;  
+            }
+        }
+        void Ellipse(double rx, double ry,
+                        double xc, double yc)
+        {
+
+            double dx, dy, d1, d2, x, y;
+            x = 0;
+            y = ry;
+
+            // Initial decision parameter of region 1
+            d1 = (ry * ry) - (rx * rx * ry) +
+                            (0.25f * rx * rx);
+            dx = 2 * ry * ry * x;
+            dy = 2 * rx * rx * y;
+
+            // For region 1
+            bool firstTime = true;
+            SolidColorBrush newBrush = (SolidColorBrush)nowColor.Background;
+            while (dx < dy)
+            {
+
+                // Print points based on 4-way symmetry
+                PixelInfo pixel = ChangePixelColor(new Point(x+xc, y+yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                if (pixel != null)
+                    firstTime = false;
+                pixel = ChangePixelColor(new Point(-x + xc, y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                if (pixel != null)
+                    firstTime = false;
+                pixel = ChangePixelColor(new Point(x + xc, -y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                if (pixel != null)
+                    firstTime = false;
+                pixel = ChangePixelColor(new Point(-x + xc, -y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                if (pixel != null)
+                    firstTime = false;
+
+                // Checking and updating value of
+                // decision parameter based on algorithm
+                if (d1 < 0)
+                {
+                    x++;
+                    dx = dx + (2 * ry * ry);
+                    d1 = d1 + dx + (ry * ry);
+                }
+                else
+                {
+                    x++;
+                    y--;
+                    dx = dx + (2 * ry * ry);
+                    dy = dy - (2 * rx * rx);
+                    d1 = d1 + dx - dy + (ry * ry);
+                }
+            }
+
+            // Decision parameter of region 2
+            d2 = ((ry * ry) * ((x + 0.5f) * (x + 0.5f)))
+                + ((rx * rx) * ((y - 1) * (y - 1)))
+                - (rx * rx * ry * ry);
+
+            // Plotting points of region 2
+            while (y >= 0)
+            {
+
+                // printing points based on 4-way symmetry
+                PixelInfo pixel = ChangePixelColor(new Point(x + xc, y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                if (pixel != null)
+                    firstTime = false;
+                pixel = ChangePixelColor(new Point(-x + xc, y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                if (pixel != null)
+                    firstTime = false;
+                pixel = ChangePixelColor(new Point(x + xc, -y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                if (pixel != null)
+                    firstTime = false;
+                pixel = ChangePixelColor(new Point(-x + xc, -y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                if (pixel != null)
+                    firstTime = false;
+
+                // Checking and updating parameter
+                // value based on algorithm
+                if (d2 > 0)
+                {
+                    y--;
+                    dy = dy - (2 * rx * rx);
+                    d2 = d2 + (rx * rx) - dy;
+                }
+                else
+                {
+                    y--;
+                    x++;
+                    dx = dx + (2 * ry * ry);
+                    dy = dy - (2 * rx * rx);
+                    d2 = d2 + dx - dy + (rx * rx);
+                }
+            }
         }
         void FloodFill(int x,int y,int width, int height,Color fill,Color old,bool firstTime,bool checkColor = true)
         {
@@ -314,13 +553,10 @@ namespace LCDPix
             else if (!checkColor && selectedPixels.Contains(GetPixel(pos)))
             {
                 bool first = true;
-                foreach (var pixel in ScreenMap)
+                foreach (var pixel in selectedPixels)
                 {
-                    if (selectedPixels.Contains(pixel))
-                    {
-                        ChangePixelColor(pixel, fill, first);
-                        first = false;
-                    }
+                    ChangePixelColor(pixel, fill, first);
+                    first = false;
                 }
             }
         }
@@ -380,9 +616,8 @@ namespace LCDPix
         }
         PixelInfo GetPixel(Point Position)
         {
-            for (int i = 0; i < ScreenMap.Count; i++)
-            {
-                PixelInfo pixel = ScreenMap[i];
+           foreach(var pixel in ScreenMap) 
+            { 
                 if (FindPoint(pixel.BottomLeft, pixel.TopRight, Position))
                 {
                     return pixel;
@@ -711,7 +946,7 @@ namespace LCDPix
 
         private void Screen_MouseMove(object sender, MouseEventArgs e)
         {
-            if (MouseLeftPressedReally)
+            if (MouseLeftPressedReally && GetPixel(e.GetPosition(Screen)) != null)
             {
                 LeftClick(false, e.MouseDevice.GetPosition(Screen));
             }
@@ -785,13 +1020,10 @@ namespace LCDPix
             if(e.Key == Key.Delete)
             {
                 bool first = true;
-                foreach(var pixel in ScreenMap)
+                foreach(var pixel in selectedPixels)
                 {
-                    if (selectedPixels.Contains(pixel))
-                    {
-                        ChangePixelColor(pixel, Colors.White, first);
-                        first = false;
-                    }
+                    ChangePixelColor(pixel, Colors.White, first);
+                    first = false;
                 }
             }
         }
@@ -814,6 +1046,31 @@ namespace LCDPix
                 if (zoom <= 0.3)
                     zoom = 0.3;
             }
+            if (Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                int width = 0;
+                int height = 0;
+                PixelInfo pixel = ScreenMap[0];
+                for (int x = 0; x < sizex; x++)
+                {
+                    width += pixel.Width;
+                }
+                for (int x = 0; x < sizey; x++)
+                {
+                    height += pixel.Height;
+                }
+                MapCanvas.Height = height * zoom;
+                MapCanvas.Width = width * zoom;
+                Draw();
+                RemoveSelection();
+                ZoomInAmount.Text = $"Zoom: ({Math.Round(zoom * 100)}%)";
+            }
+        }
+        void SetZoom(double zoomAmount)
+        {
+            if (zoomAmount <= 0.3)
+                zoomAmount = 0.3;
+            zoom = zoomAmount;
             int width = 0;
             int height = 0;
             PixelInfo pixel = ScreenMap[0];
@@ -829,7 +1086,7 @@ namespace LCDPix
             MapCanvas.Width = width * zoom;
             Draw();
             RemoveSelection();
-            ZoomInAmount.Text = $"Zoom: ({Math.Round(zoom*100)}%)";
+            ZoomInAmount.Text = $"Zoom: ({Math.Round(zoom * 100)}%)";
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
@@ -998,6 +1255,8 @@ namespace LCDPix
                 showGrid = false;
             }
             Draw();
+            if(selection != null)
+                Screen.Children.Add(selection);
         }
 
         private void AreaSelectionButton_Click(object sender, RoutedEventArgs e)
@@ -1005,23 +1264,26 @@ namespace LCDPix
             mode = "Area Selection";
             SelectedModeText.Text = $"Selected mode: {mode}";
         }
-
-        private void Screen_MouseUp(object sender, MouseButtonEventArgs e)
+        void LeftClickUp(Point e)
         {
-            if(e.LeftButton == MouseButtonState.Released && MouseLeftPressedReally)
+            MouseLeftPressedReally = false;
+            Point endingPoint = new Point();
+            double minx, miny, maxx, maxy;
+            PixelInfo topLeft, bottomRight;
+            Rect rect;
+            if (areaSelectionStartingPoint == new Point(-1, -1))
+                return;
+            switch (mode)
             {
-                MouseLeftPressedReally = false;
-                if (mode == "Area Selection")
-                {
-                    //TODO - Calculate with zoom
-                    Point endingPoint = e.GetPosition(Screen);
-                    double minx = Math.Min(endingPoint.X, areaSelectionStartingPoint.X);
-                    double miny = Math.Min(endingPoint.Y, areaSelectionStartingPoint.Y);
-                    double maxx = Math.Max(endingPoint.X, areaSelectionStartingPoint.X);
-                    double maxy = Math.Max(endingPoint.Y, areaSelectionStartingPoint.Y);
-                    PixelInfo topLeft = GetPixel(new Point(minx, miny));
-                    PixelInfo bottomRight = GetPixel(new Point(maxx, maxy));
-                    Rect rect = new Rect(topLeft.X * topLeft.Width * zoom, topLeft.Y * topLeft.Height * zoom,
+                case "Area Selection":
+                    endingPoint = e;
+                    minx = Math.Min(endingPoint.X, areaSelectionStartingPoint.X);
+                    miny = Math.Min(endingPoint.Y, areaSelectionStartingPoint.Y);
+                    maxx = Math.Max(endingPoint.X, areaSelectionStartingPoint.X);
+                    maxy = Math.Max(endingPoint.Y, areaSelectionStartingPoint.Y);
+                    topLeft = GetPixel(new Point(minx, miny));
+                    bottomRight = GetPixel(new Point(maxx, maxy));
+                    rect = new Rect(topLeft.X * topLeft.Width * zoom, topLeft.Y * topLeft.Height * zoom,
                             (bottomRight.X - topLeft.X + 1) * topLeft.Width * zoom,
                             (bottomRight.Y - topLeft.Y + 1) * topLeft.Height * zoom);
                     RemoveSelection();
@@ -1032,8 +1294,55 @@ namespace LCDPix
                             (bottomRight.X - topLeft.X + 1) * topLeft.Width * zoom,
                             (bottomRight.Y - topLeft.Y + 1) * topLeft.Height * zoom);
                     }
-                }
+                    areaSelectionStartingPoint = new Point(-1, -1);
+                    break;
+                case "Line":
+                    Screen.Children.Remove(lineSelection);
+                    endingPoint = e;
+                    Line((int)areaSelectionStartingPoint.X, (int)areaSelectionStartingPoint.Y, (int)endingPoint.X, (int)endingPoint.Y,true);
+                    areaSelectionStartingPoint = new Point(-1, -1);
+                    break;
+                case "Ellipse":
+                    Screen.Children.Remove(ellipseSelection);
+                    endingPoint = e;
+                    minx = Math.Min(endingPoint.X, areaSelectionStartingPoint.X);
+                    miny = Math.Min(endingPoint.Y, areaSelectionStartingPoint.Y);
+                    maxx = Math.Max(endingPoint.X, areaSelectionStartingPoint.X);
+                    maxy = Math.Max(endingPoint.Y, areaSelectionStartingPoint.Y);
+                    Ellipse((int)((maxx - minx) / 2), (int)((maxy - miny) / 2), (int)((maxx + minx) / 2), (int)((maxy + miny) / 2));
+                    areaSelectionStartingPoint = new Point(-1, -1);
+                    break;
+                case "Rectangle":
+                    Screen.Children.Remove(rectSelection);
+                    endingPoint = e;
+                    minx = Math.Min(endingPoint.X, areaSelectionStartingPoint.X);
+                    miny = Math.Min(endingPoint.Y, areaSelectionStartingPoint.Y);
+                    maxx = Math.Max(endingPoint.X, areaSelectionStartingPoint.X);
+                    maxy = Math.Max(endingPoint.Y, areaSelectionStartingPoint.Y);
+                    topLeft = GetPixel(new Point(minx, miny));
+                    bottomRight = GetPixel(new Point(maxx, maxy));
+                    //rect = new Rect(topLeft.X * topLeft.Width * zoom, topLeft.Y * topLeft.Height * zoom,
+                    //        (bottomRight.X - topLeft.X) * topLeft.Width * zoom,
+                    //        (bottomRight.Y - topLeft.Y) * topLeft.Height * zoom);
+
+                    rect = new Rect((topLeft.X+0.5) * topLeft.Width * zoom, (topLeft.Y+0.5) * topLeft.Height * zoom,
+                            (bottomRight.X - topLeft.X) * topLeft.Width * zoom,
+                            (bottomRight.Y - topLeft.Y) * topLeft.Height * zoom);
+                    Line((int)rect.TopLeft.X, (int)rect.TopLeft.Y, (int)rect.TopRight.X, (int)rect.TopRight.Y, true);
+                    Line((int)rect.TopRight.X, (int)rect.TopRight.Y, (int)rect.BottomRight.X, (int)rect.BottomRight.Y, false);
+                    Line((int)rect.BottomRight.X, (int)rect.BottomRight.Y, (int)rect.BottomLeft.X, (int)rect.BottomLeft.Y, false);
+                    Line((int)rect.BottomLeft.X, (int)rect.BottomLeft.Y, (int)rect.TopLeft.X, (int)rect.TopLeft.Y, false);
+                    areaSelectionStartingPoint = new Point(-1, -1);
+                    break;
             }
+        }
+        private void Screen_MouseUp(object sender, MouseButtonEventArgs e)
+        {
+            //Console.WriteLine("Screen_MouseUp " + x);
+            //if (e.LeftButton == MouseButtonState.Released && MouseLeftPressedReally)
+            //{
+            //    LeftClickUp(e.GetPosition(Screen));
+            //}
         }
         void RemoveSelection()
         {
@@ -1041,6 +1350,281 @@ namespace LCDPix
                 Screen.Children.Remove(selection);
             selection = null;
             selectedPixels.Clear();
+        }
+
+        private void Screen_MouseLeave(object sender, MouseEventArgs e)
+        {
+            if (MouseLeftPressedReally)
+            {
+                MouseLeftPressedReally = false;
+                if (mode == "Area Selection" && selection != null && selectedPixels.Count == 0)
+                {
+                    Screen.Children.Remove(selection);
+                }
+                else if (mode == "Area Selection" && selection != null && selectedPixels.Count > 0)
+                {
+                    RemoveSelection();
+                }
+                Screen.Children.Remove(lineSelection);
+                Screen.Children.Remove(ellipseSelection);
+                Screen.Children.Remove(rectSelection);
+                areaSelectionStartingPoint = new Point(-1, -1);
+            }
+        }
+
+        private void Screen_MouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+        {
+            LeftClickUp(e.GetPosition(Screen));
+        }
+
+        private void LineSelectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            mode = "Line";
+            SelectedModeText.Text = $"Selected mode: {mode}";
+        }
+
+        private void EllipseSelectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            mode = "Ellipse";
+            SelectedModeText.Text = $"Selected mode: {mode}";
+        }
+
+        private void RectangleSelectionButton_Click(object sender, RoutedEventArgs e)
+        {
+            mode = "Rectangle";
+            SelectedModeText.Text = $"Selected mode: {mode}";
+        }
+        async Task PutTaskDelay(int time)
+        {
+            await Task.Delay(time);
+        }
+        async void ReadLCDPixScript(string path)
+        {
+            string[] lines = File.ReadAllLines(path);
+            int lineNo = 0;
+            bool startReading = false;
+            int pixelWidth = 0;
+            Rect rect;
+            double minx, miny, maxx, maxy;
+            double x1, y1, x2, y2;
+            bool comment = false;
+            bool firstTime = true;
+            try {
+                foreach (string line in lines)
+                {
+                    lineNo++;
+                    SolidColorBrush newBrush = (SolidColorBrush)nowColor.Background;
+                    if (line == "[LCDIPT]")
+                    {
+                        startReading = true;
+                        continue;
+                    }
+                    else if (!startReading)
+                        continue;
+                    else if (line == "[END_LCDIPT]")
+                        break;
+                    else if (line == "")
+                        continue;
+                    else if (line.Substring(0, 2) == "//")
+                        continue;
+                    else if (line.Substring(0, 2) == "/*")
+                    {
+                        comment = true;
+                        continue;
+                    }
+                    else if (comment && line.Substring(line.Length - 2, 2) == "*/")
+                    {
+                        comment = false;
+                        continue;
+                    }
+                    else if (comment)
+                        continue;
+                    string command = line.Split('(')[0];
+                    string[] args = line.Split('(')[1].Replace(")", "").Split(',');
+                    switch (command.ToLower())
+                    {
+                        case "create":
+                            undoStack.Clear();
+                            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+                            ScreenMap.Clear();
+                            sizex = int.Parse(args[0]);
+                            sizey = int.Parse(args[1]);
+                            int pixelsize = int.Parse(args[2]);
+                            Title = $"Blank LCDPix file";
+                            for (int x = 0; x < sizex; x++)
+                            {
+                                for (int y = 0; y < sizey; y++)
+                                {
+                                    ScreenMap.Add(new PixelInfo(x, y, pixelsize, pixelsize, Colors.White));
+                                }
+                            }
+                            int width = 0;
+                            int height = 0;
+                            PixelInfo pixel = ScreenMap[0];
+                            for (int x = 0; x < sizex; x++)
+                            {
+                                width += pixel.Width;
+                            }
+                            for (int x = 0; x < sizey; x++)
+                            {
+                                height += pixel.Height;
+                            }
+                            MapCanvas.Height = height;
+                            MapCanvas.Width = width;
+                            Draw();
+                            Mouse.OverrideCursor = null;
+                            break;
+                        case "grid":
+                            if(ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            ShowGridCheck.IsChecked = bool.Parse(args[0]);
+                            ShowGridCheck_Click(null, null);
+                            break;
+                        case "zoom":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            SetZoom(int.Parse(args[0]) / 100.0);
+                            break;
+                        case "wait":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            await PutTaskDelay(int.Parse(args[0]));
+                            break;
+                        case "rectangle":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            pixelWidth = ScreenMap[0].Width;
+                            rect = new Rect(double.Parse(args[0].Replace(".", ",")) * pixelWidth * zoom,
+                                double.Parse(args[1].Replace(".", ",")) * pixelWidth * zoom,
+                                double.Parse(args[2].Replace(".", ",")) * pixelWidth * zoom,
+                                double.Parse(args[3].Replace(".", ",")) * pixelWidth * zoom);
+                            Line((int)rect.TopLeft.X, (int)rect.TopLeft.Y, (int)rect.TopRight.X, (int)rect.TopRight.Y, true);
+                            Line((int)rect.TopRight.X, (int)rect.TopRight.Y, (int)rect.BottomRight.X, (int)rect.BottomRight.Y, false);
+                            Line((int)rect.BottomRight.X, (int)rect.BottomRight.Y, (int)rect.BottomLeft.X, (int)rect.BottomLeft.Y, false);
+                            Line((int)rect.BottomLeft.X, (int)rect.BottomLeft.Y, (int)rect.TopLeft.X, (int)rect.TopLeft.Y, false);
+                            break;
+                        case "ellipse":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            pixelWidth = ScreenMap[0].Width;
+                            x1 = int.Parse(args[0].Replace(".", ",")) * pixelWidth * zoom;
+                            y1 = int.Parse(args[1].Replace(".", ",")) * pixelWidth * zoom;
+                            x2 = int.Parse(args[2].Replace(".", ",")) * pixelWidth * zoom;
+                            y2 = int.Parse(args[3].Replace(".", ",")) * pixelWidth * zoom;
+                            minx = Math.Min(x1, x2);
+                            miny = Math.Min(y1, y2);
+                            maxx = Math.Max(x1, x2);
+                            maxy = Math.Max(y1, y2);
+                            Ellipse((int)((maxx - minx) / 2), (int)((maxy - miny) / 2), (int)((maxx + minx) / 2), (int)((maxy + miny) / 2));
+                            break;
+                        case "line":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            pixelWidth = ScreenMap[0].Width;
+                            x1 = int.Parse(args[0].Replace(".", ",")) * pixelWidth * zoom;
+                            y1 = int.Parse(args[1].Replace(".", ",")) * pixelWidth * zoom;
+                            x2 = int.Parse(args[2].Replace(".", ",")) * pixelWidth * zoom;
+                            y2 = int.Parse(args[3].Replace(".", ",")) * pixelWidth * zoom;
+                            Line((int)x1, (int)y1, (int)x2, (int)y2, true);
+                            break;
+                        case "draw":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            pixelWidth = ScreenMap[0].Width;
+                            ChangePixelColor(new Point(double.Parse(args[0]) * pixelWidth * zoom,
+                                double.Parse(args[1]) * pixelWidth * zoom),
+                                Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), true);
+                            break;
+                        case "color":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            nowColor.Background = new SolidColorBrush(Color.FromRgb(byte.Parse(args[0]), byte.Parse(args[1]), byte.Parse(args[2])));
+                            RedValue.Text = args[0];
+                            GreenValue.Text = args[1];
+                            BlueValue.Text = args[2];
+                            break;
+                        case "fill":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            pixelWidth = ScreenMap[0].Width;
+                            x1 = int.Parse(args[0]);
+                            y1 = int.Parse(args[1]);
+                            Color pixelColor = GetPixelColor(new Point(x1 * pixelWidth * zoom, y1 * pixelWidth * zoom));
+                            if (selectedPixels.Count > 0)
+                                FloodFill((int)x1, (int)y1, pixelWidth, pixelWidth,
+                                    Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), pixelColor, true, false);
+                            else if (selectedPixels.Count <= 0)
+                                FloodFill((int)x1, (int)y1, pixelWidth, pixelWidth,
+                                    Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), pixelColor, true);
+                            break;
+                        case "erase":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            pixelWidth = ScreenMap[0].Width;
+                            ChangePixelColor(new Point(double.Parse(args[0]) * pixelWidth * zoom,
+                                double.Parse(args[1]) * pixelWidth * zoom),
+                                Colors.White, true);
+                            break;
+                        case "undo":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            firstTime = true;
+                            while (undoStack.Count != 0)
+                            {
+                                var temp = undoStack.Pop();
+                                redoStack.Push(new ColorChange(temp.pixelInfo, temp.pixelInfo.FillColor, firstTime));
+                                temp.UndoAction();
+                                if (temp.firstTime)
+                                    break;
+                                firstTime = false;
+                            }
+                            if (undoStack.Count == 0)
+                                Title = Title.Replace("*", "");
+                            break;
+                        case "redo":
+                            if (ScreenMap.Count == 0)
+                                throw new ArgumentException("File cannot be null");
+                            firstTime = true;
+                            while (redoStack.Count != 0)
+                            {
+                                var temp = redoStack.Pop();
+                                undoStack.Push(new ColorChange(temp.pixelInfo, temp.pixelInfo.FillColor, firstTime));
+                                temp.UndoAction();
+                                if (temp.firstTime)
+                                    break;
+                                firstTime = false;
+                            }
+                            if (!Title.Contains("*"))
+                                Title += "*";
+                            break;
+                    }
+                }
+            }
+            catch (Exception ex) 
+            {
+                MessageBox.Show($"Error acurred at line {lineNo}, please check the code\n{ex.Message}","LCDPix script runtime error",MessageBoxButton.OK,MessageBoxImage.Error);
+            }
+        }
+        private void OpenScript_Click(object sender, RoutedEventArgs e)
+        {
+            CheckForChanges();
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                FileName = "Default", // Default file name
+                DefaultExt = ".lcdipt", // Default file extension
+                Filter = "LCDPix script |*.lcdipt" // Filter files by extension
+            };
+
+            // Show open file dialog box
+            bool? result = dialog.ShowDialog();
+
+            // Process open file dialog box results
+            if (result == true)
+            {
+                // Open document
+                string filename = dialog.FileName;
+                ReadLCDPixScript(filename);
+            }
         }
     }
 }

@@ -122,5 +122,14 @@
   <ItemGroup>
     <Resource Include="selection.png" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="line-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="ellipse-icon.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="rectangle-icon.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
