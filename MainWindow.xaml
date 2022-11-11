@@ -37,6 +37,7 @@
                     <MenuItem x:Name="ExitButton" Header="_Exit" Click="ExitButton_Click" />
                 </MenuItem>
                 <MenuItem Header="_Script">
+                    <MenuItem x:Name="NewScript" Header="_New" Click="NewScript_Click"/>
                     <MenuItem x:Name="OpenScript" Header="_Open" Click="OpenScript_Click"/>
                 </MenuItem>
                 <MenuItem Header="_View">
@@ -51,7 +52,7 @@
         </ScrollViewer>
         <GridSplitter Grid.RowSpan="2" Grid.Row="1" Grid.Column="1" Width="5"/>
         <StackPanel Grid.RowSpan="2" Grid.Row="1" Grid.Column="2" Background="#FFC3BFBF">
-            <Image x:Name="ColorPicker" Source="/rgbSpectrum.jpg" MouseMove="ColorPicker_MouseMove" VerticalAlignment="Top" MouseUp="ColorPicker_Up" MouseDown="ColorPicker_MouseDown"/>
+            <Image x:Name="ColorPicker" Source="res/rgbSpectrum.jpg" MouseMove="ColorPicker_MouseMove" VerticalAlignment="Top" MouseUp="ColorPicker_Up" MouseDown="ColorPicker_MouseDown"/>
             <TextBlock x:Name="selectedColor" VerticalAlignment="Top"/>
             <TextBlock Text="Selected Color:"/>
             <TextBlock x:Name="nowColor" VerticalAlignment="Top" Background="Black"></TextBlock>
@@ -67,51 +68,51 @@
         <StackPanel  Grid.RowSpan="2" Grid.Row="1" Grid.Column="0" Background="#FFC3BFBF">
             <Button x:Name="CurosrSelectButton" Click="CurosrSelectButton_Click">
                 <Button.Background>
-                    <ImageBrush ImageSource="/cursor-solid.png"/>
+                    <ImageBrush ImageSource="res/cursor-solid.png"/>
                 </Button.Background>
-                <Image Source="/cursor-solid.png"/>
+                <Image Source="res/cursor-solid.png"/>
             </Button>
             <Button x:Name="EraserSelectButton" Click="EraserSelectButton_Click">
                 <Button.Background>
-                    <ImageBrush ImageSource="/eraser-icon.png"/>
+                    <ImageBrush ImageSource="res/eraser-icon.png"/>
                 </Button.Background>
-                <Image Source="/eraser-icon.png"/>
+                <Image Source="res/eraser-icon.png"/>
             </Button>
             <Button x:Name="PipetteSelectorButton" Click="PipetteSelectorButton_Click">
                 <Button.Background>
-                    <ImageBrush ImageSource="/pipette-icon.png"/>
+                    <ImageBrush ImageSource="res/pipette-icon.png"/>
                 </Button.Background>
-                <Image Source="/pipette-icon.png"/>
+                <Image Source="res/pipette-icon.png"/>
             </Button>
             <Button x:Name="FillSelectorButton" Click="FillSelectorButton_Click">
                 <Button.Background>
-                    <ImageBrush ImageSource="/fill-icon.png"/>
+                    <ImageBrush ImageSource="res/fill-icon.png"/>
                 </Button.Background>
-                <Image Source="/fill-icon.png"/>
+                <Image Source="res/fill-icon.png"/>
             </Button>
             <Button x:Name="AreaSelectionButton" Click="AreaSelectionButton_Click">
                 <Button.Background>
-                    <ImageBrush ImageSource="/selection.png"/>
+                    <ImageBrush ImageSource="res/selection.png"/>
                 </Button.Background>
-                <Image Source="/selection.png" Width="12" Height="12"/>
+                <Image Source="res/selection.png" Width="12" Height="12"/>
             </Button>
             <Button x:Name="LineSelectionButton" Click="LineSelectionButton_Click">
                 <Button.Background>
-                    <ImageBrush ImageSource="/line-icon.png"/>
+                    <ImageBrush ImageSource="res/line-icon.png"/>
                 </Button.Background>
-                <Image Source="/line-icon.png" Width="12" Height="12"/>
+                <Image Source="res/line-icon.png" Width="12" Height="12"/>
             </Button>
             <Button x:Name="EllipseSelectionButton" Click="EllipseSelectionButton_Click">
                 <Button.Background>
-                    <ImageBrush ImageSource="/ellipse-icon.png"/>
+                    <ImageBrush ImageSource="res/ellipse-icon.png"/>
                 </Button.Background>
-                <Image Source="/ellipse-icon.png" Width="12" Height="12"/>
+                <Image Source="res/ellipse-icon.png" Width="12" Height="12"/>
             </Button>
             <Button x:Name="RectangleSelectionButton" Click="RectangleSelectionButton_Click">
                 <Button.Background>
-                    <ImageBrush ImageSource="/rectangle-icon.png"/>
+                    <ImageBrush ImageSource="res/rectangle-icon.png"/>
                 </Button.Background>
-                <Image Source="/rectangle-icon.png" Width="12" Height="12"/>
+                <Image Source="res/rectangle-icon.png" Width="12" Height="12"/>
             </Button>
         </StackPanel>
     </Grid>

@@ -22,6 +22,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Media.Media3D;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Path = System.IO.Path;
 
 namespace LCDPix
 {
@@ -63,12 +64,15 @@ namespace LCDPix
                 this.PixelRect.Fill = new SolidColorBrush(color);
             }
         }
+        static CancellationTokenSource s_cts = new CancellationTokenSource();
         int sizex = 0;
         int sizey = 0;
+        internal ScriptEditor scriptEditorWin = null;
         double zoom = 1;
         string mode = "Drawing";
         bool showGrid = true;
         bool MouseLeftPressedReally = false;
+        internal bool ScriptRunning = false;
         Point areaSelectionStartingPoint = new Point();
         Rectangle selection = null;
         Line lineSelection = null;
@@ -302,6 +306,8 @@ namespace LCDPix
         }
         void LeftClick(bool firstTime, Point e)
         {
+            if (ScriptRunning)
+                return;
             switch (mode)
             {
                 case "Drawing":
@@ -1398,7 +1404,14 @@ namespace LCDPix
         {
             await Task.Delay(time);
         }
-        async void ReadLCDPixScript(string path)
+        internal void StartScript(string path)
+        {
+            s_cts.Dispose(); // Clean up old token source....
+            s_cts = new CancellationTokenSource();
+            CancellationToken ct = s_cts.Token;
+            ReadLCDPixScript(path, ct);
+        }
+        async void ReadLCDPixScript(string path,CancellationToken cancellationToken)
         {
             string[] lines = File.ReadAllLines(path);
             int lineNo = 0;
@@ -1409,10 +1422,22 @@ namespace LCDPix
             double x1, y1, x2, y2;
             bool comment = false;
             bool firstTime = true;
+            Title = $"{Path.GetFileName(path)} - {path} (LCDPix (Running))";
             try {
                 foreach (string line in lines)
                 {
+                    if (cancellationToken.IsCancellationRequested && ScriptRunning)
+                    {
+                        Title = $"{Path.GetFileName(path)} - {path} (LCDPix (Stopped))";
+                        break;
+                    }
+                    ScriptRunning = true;
                     lineNo++;
+                    if (scriptEditorWin != null && scriptEditorWin.FollowScript)
+                    {
+                        scriptEditorWin.Unsubscribe();
+                        scriptEditorWin.SetSelection(lineNo);
+                    }
                     SolidColorBrush newBrush = (SolidColorBrush)nowColor.Background;
                     if (line == "[LCDIPT]")
                     {
@@ -1422,7 +1447,13 @@ namespace LCDPix
                     else if (!startReading)
                         continue;
                     else if (line == "[END_LCDIPT]")
+                    {
+                        if (scriptEditorWin != null)
+                            scriptEditorWin.Subscribe();
+                        ScriptRunning = false;
+                        Title = $"{Path.GetFileName(path)} - {path} (LCDPix (Ended))";
                         break;
+                    }
                     else if (line == "")
                         continue;
                     else if (line.Substring(0, 2) == "//")
@@ -1450,7 +1481,6 @@ namespace LCDPix
                             sizex = int.Parse(args[0]);
                             sizey = int.Parse(args[1]);
                             int pixelsize = int.Parse(args[2]);
-                            Title = $"Blank LCDPix file";
                             for (int x = 0; x < sizex; x++)
                             {
                                 for (int y = 0; y < sizey; y++)
@@ -1602,8 +1632,17 @@ namespace LCDPix
             }
             catch (Exception ex) 
             {
+                if (scriptEditorWin != null)
+                    scriptEditorWin.Subscribe();
                 MessageBox.Show($"Error acurred at line {lineNo}, please check the code\n{ex.Message}","LCDPix script runtime error",MessageBoxButton.OK,MessageBoxImage.Error);
+                Title = $"{Path.GetFileName(path)} - {path} (LCDPix (Crashed, line: {lineNo}))";
+                ScriptRunning = false;
             }
+        }
+        internal void StopScript()
+        {
+            s_cts.Cancel();
+            ScriptRunning = false;
         }
         private void OpenScript_Click(object sender, RoutedEventArgs e)
         {
@@ -1623,8 +1662,28 @@ namespace LCDPix
             {
                 // Open document
                 string filename = dialog.FileName;
-                ReadLCDPixScript(filename);
+                if (scriptEditorWin != null)
+                {
+                    scriptEditorWin.filePath = filename;
+                    scriptEditorWin.OpenScript();
+                    return;
+                }
+                scriptEditorWin = new ScriptEditor(filename);
+                scriptEditorWin.Owner = this;
+                scriptEditorWin.Show();
             }
+        }
+
+        private void NewScript_Click(object sender, RoutedEventArgs e)
+        {
+            if (scriptEditorWin != null)
+            {
+                scriptEditorWin.NewScript();
+                return;
+            }
+            scriptEditorWin = new ScriptEditor();
+            scriptEditorWin.Owner = this;
+            scriptEditorWin.Show();
         }
     }
 }

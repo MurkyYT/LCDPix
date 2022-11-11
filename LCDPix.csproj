@@ -56,6 +56,9 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="ScriptEditor.xaml.cs">
+      <DependentUpon>ScriptEditor.xaml</DependentUpon>
+    </Compile>
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -70,6 +73,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="NewFileDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ScriptEditor.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -105,31 +112,31 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="rgbSpectrum.jpg" />
+    <Resource Include="Res\rgbSpectrum.jpg" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="cursor-solid.png" />
+    <Resource Include="Res\cursor-solid.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="eraser-icon.png" />
+    <Resource Include="Res\eraser-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="pipette-icon.png" />
+    <Resource Include="Res\pipette-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="fill-icon.png" />
+    <Resource Include="Res\fill-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="selection.png" />
+    <Resource Include="Res\selection.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="line-icon.png" />
+    <Resource Include="Res\line-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="ellipse-icon.png" />
+    <Resource Include="Res\ellipse-icon.png" />
   </ItemGroup>
   <ItemGroup>
-    <Resource Include="rectangle-icon.png" />
+    <Resource Include="Res\rectangle-icon.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
