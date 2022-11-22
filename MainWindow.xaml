@@ -9,6 +9,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
@@ -18,7 +19,7 @@
             <ColumnDefinition Width="180"/>
         </Grid.ColumnDefinitions>
         <DockPanel Grid.Row ="0" Grid.ColumnSpan="3">
-            <Menu DockPanel.Dock="Top">
+            <Menu DockPanel.Dock="Top" Background="#FFC3BFBF">
                 <MenuItem Header="_File">
                     <MenuItem x:Name="NewFile" Header="_New" Click="NewFile_Click" />
                     <MenuItem x:Name="OpenFile" Header="_Open" Click="OpenFile_Click" />
@@ -45,13 +46,15 @@
                 </MenuItem>
             </Menu>
         </DockPanel>
-        <ScrollViewer Grid.RowSpan="2" x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="White" Grid.Row="1" Grid.Column="1">
+        <TabControl x:Name="TabControl" Grid.Column="1" Grid.Row="1" SelectionChanged="TabControl_SelectionChanged">
+        </TabControl>
+        <ScrollViewer Grid.RowSpan="2" x:Name="Scroller" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Background="#FFC3BFBF" Grid.Row="2" Grid.Column="1">
             <Canvas x:Name="MapCanvas">
                 <Canvas  x:Name="Screen" MouseLeftButtonDown="Screen_MouseLeftButtonDown" MouseMove="Screen_MouseMove" MouseUp="Screen_MouseUp" MouseLeave="Screen_MouseLeave" MouseLeftButtonUp="Screen_MouseLeftButtonUp" Background="White"/>
             </Canvas>
         </ScrollViewer>
-        <GridSplitter Grid.RowSpan="2" Grid.Row="1" Grid.Column="1" Width="5"/>
-        <StackPanel Grid.RowSpan="2" Grid.Row="1" Grid.Column="2" Background="#FFC3BFBF">
+        <GridSplitter Grid.RowSpan="2" Grid.Row="1" Grid.Column="1" Width="5" Background="#FFC3BFBF"/>
+        <StackPanel Grid.RowSpan="3" Grid.Row="1" Grid.Column="2" Background="#FFC3BFBF">
             <Image x:Name="ColorPicker" Source="res/rgbSpectrum.jpg" MouseMove="ColorPicker_MouseMove" VerticalAlignment="Top" MouseUp="ColorPicker_Up" MouseDown="ColorPicker_MouseDown"/>
             <TextBlock x:Name="selectedColor" VerticalAlignment="Top"/>
             <TextBlock Text="Selected Color:"/>
@@ -63,8 +66,8 @@
             <TextBlock Text="B:"/>
             <TextBox x:Name="BlueValue" TextChanged="BlueValue_TextChanged" PreviewTextInput="BlueValue_PreviewTextInput" MaxLength="3" Text="0"/>
         </StackPanel>
-        <TextBlock x:Name="ZoomInAmount" VerticalAlignment="Bottom" Grid.Row="1" Grid.Column="2" Text="Zoom: " HorizontalAlignment="Left"/>
-        <TextBlock x:Name="SelectedModeText" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="2" Text="Selected Mode:" HorizontalAlignment="Left"/>
+        <TextBlock x:Name="ZoomInAmount" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="2" Text="Zoom: " HorizontalAlignment="Left"/>
+        <TextBlock x:Name="SelectedModeText" VerticalAlignment="Bottom" Grid.Row="3" Grid.Column="2" Text="Selected Mode:" HorizontalAlignment="Left"/>
         <StackPanel  Grid.RowSpan="2" Grid.Row="1" Grid.Column="0" Background="#FFC3BFBF">
             <Button x:Name="CurosrSelectButton" Click="CurosrSelectButton_Click">
                 <Button.Background>

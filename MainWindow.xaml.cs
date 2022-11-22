@@ -1,28 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Drawing.Imaging;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters;
+using Path = System.IO.Path;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
-using System.Windows.Interop;
-using System.Windows.Markup;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Media.Media3D;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
-using Path = System.IO.Path;
+using LCDPix.Classes;
 
 namespace LCDPix
 {
@@ -31,39 +22,6 @@ namespace LCDPix
     /// </summary>
     public partial class MainWindow : Window
     {
-        internal class PixelInfo
-        {
-            public Point TopLeft { get; internal set; }
-            public Point TopRight { get; internal set; }
-            public Point BottomLeft { get; internal set; }
-            public Point BottomRight { get; internal set; }
-            public int X { get; internal set; }
-            public int Y { get; internal set; }
-            public int Width { get; internal set; }
-            public int Height { get; internal set; }
-            public Color FillColor { get; internal set; }
-            public Rectangle PixelRect { get; internal set; }
-            public double Opacity { get; internal set; }
-            public PixelInfo(int x, int y, int Width, int Height, Color fillColor)
-            {
-                this.X = x;
-                this.Y = y;
-                this.Width = Width;
-                this.Height = Height;
-                this.FillColor = fillColor;
-                this.TopLeft = new Point(x * Width, y * Height);
-                this.TopRight = new Point(x * Width + Width, y * Height);
-                this.BottomLeft = new Point(x * Width, y * Height + Height);
-                this.BottomRight = new Point(x * Width + Width, y * Height + Height);
-                this.PixelRect = null;
-                this.Opacity = 1;
-            }
-            public void ChangeColor(Color color)
-            {
-                this.FillColor = color;
-                this.PixelRect.Fill = new SolidColorBrush(color);
-            }
-        }
         static CancellationTokenSource s_cts = new CancellationTokenSource();
         int sizex = 0;
         int sizey = 0;
@@ -74,6 +32,7 @@ namespace LCDPix
         bool MouseLeftPressedReally = false;
         internal bool ScriptRunning = false;
         Point areaSelectionStartingPoint = new Point();
+        Tab selectedTab = null;
         Rectangle selection = null;
         Line lineSelection = null;
         Ellipse ellipseSelection = null;
@@ -82,6 +41,7 @@ namespace LCDPix
         Stack<ColorChange> undoStack = new Stack<ColorChange>();
         Stack<ColorChange> redoStack = new Stack<ColorChange>();
         List<PixelInfo> ScreenMap = new List<PixelInfo>();
+        internal List<Tab> tabs = new List<Tab>();
         public MainWindow()
         {
             InitializeComponent();
@@ -788,6 +748,14 @@ namespace LCDPix
                 MapCanvas.Width = width;
                 Draw();
                 Mouse.OverrideCursor = null;
+                PixelInfo[] temp = new PixelInfo[ScreenMap.Count];
+                ScreenMap.CopyTo(temp);
+                tabs.Add(new Tab(temp,"untitled", tabs));
+                TabControl.Items.Add(new TabItem()
+                {
+                    Header = $"untitled",
+                });
+                Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = tabs.Count - 1));
             }
         }
 
@@ -823,6 +791,14 @@ namespace LCDPix
                 }
                 MapCanvas.Height = height * zoom;
                 MapCanvas.Width = width * zoom;
+                PixelInfo[] temp = new PixelInfo[ScreenMap.Count];
+                ScreenMap.CopyTo(temp);
+                tabs.Add(new Tab(temp, Path.GetFileName(filename), tabs));
+                TabControl.Items.Add(new TabItem()
+                {
+                    Header = $"{Path.GetFileName(filename)}",
+                });
+                Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = tabs.Count-1));
             }
         }
 
@@ -987,7 +963,11 @@ namespace LCDPix
                 if (undoStack.Count == 0)
                     Title = Title.Replace("*", "");
             }
-            if(e.Key == Key.Y && Keyboard.IsKeyDown(Key.LeftCtrl))
+            if (e.Key == Key.W && Keyboard.IsKeyDown(Key.LeftCtrl))
+            {
+                CloseFile_Click(null, null);
+            }
+            if (e.Key == Key.Y && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
                 bool firstTime = true;
                 while (redoStack.Count != 0)
@@ -1241,8 +1221,28 @@ namespace LCDPix
             undoStack.Clear();
             Screen.Children.Clear();
             ScreenMap.Clear();
+            if (tabs.Count-1 > 0)
+            {
+                int i = 0;
+                int selectedIndex = tabs.IndexOf(selectedTab);
+                if (selectedIndex - 1 >= 0)
+                    i = selectedIndex - 1;
+                Title = tabs[i].name;
+                tabs.RemoveAt(selectedIndex);
+                TabControl.Items.RemoveAt(selectedIndex);
+                Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = i));
+                selectedTab = tabs[i];
+                foreach (var pixel in tabs[i].pixels)
+                    ScreenMap.Add(pixel);
+            }
+            else if(tabs.Count > 0)
+            {
+                int selectedIndex = tabs.IndexOf(selectedTab);
+                Title = "LCDPix";
+                tabs.RemoveAt(selectedIndex);
+                TabControl.Items.RemoveAt(selectedIndex);
+            }
             Draw();
-            Title = "LCDPix";
         }
 
         private void ColorPicker_MouseDown(object sender, MouseButtonEventArgs e)
@@ -1503,6 +1503,14 @@ namespace LCDPix
                             MapCanvas.Width = width;
                             Draw();
                             Mouse.OverrideCursor = null;
+                            PixelInfo[] tempPixels = new PixelInfo[ScreenMap.Count];
+                            ScreenMap.CopyTo(tempPixels);
+                            tabs.Add(new Tab(tempPixels, "untitled", tabs));
+                            TabControl.Items.Add(new TabItem()
+                            {
+                                Header = $"untitled",
+                            });
+                            await Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = tabs.Count - 1));
                             break;
                         case "grid":
                             if(ScreenMap.Count == 0)
@@ -1684,6 +1692,53 @@ namespace LCDPix
             scriptEditorWin = new ScriptEditor();
             scriptEditorWin.Owner = this;
             scriptEditorWin.Show();
+        }
+
+        private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (e.Source is TabControl && tabs.Count >= TabControl.SelectedIndex+1 & tabs.Count != 0 && TabControl.SelectedIndex != -1)
+            {
+                //Add redoStack and undoStack fix
+                Stack<ColorChange> tempUndo = undoStack;
+                Stack<ColorChange> tempRedo = redoStack;
+                if (selectedTab != null)
+                    selectedTab.UpdateStacks(tempUndo, tempRedo);
+                selectedTab = tabs[TabControl.SelectedIndex];
+                List<PixelInfo> temp = new List<PixelInfo>();
+                foreach(var pixel2 in selectedTab.pixels)
+                {
+                    temp.Add(pixel2);
+                }
+                if (selectedTab.undoStack != null && selectedTab.redoStack != null)
+                {
+                    undoStack.Clear();
+                    redoStack.Clear();
+                    for(int i = selectedTab.redoStack.Length-1; i >= 0; i--)
+                    {
+                        redoStack.Push(selectedTab.redoStack[i]);
+                    }
+                    for (int i = selectedTab.undoStack.Length - 1; i >= 0; i--)
+                    {
+                        undoStack.Push(selectedTab.undoStack[i]);
+                    }
+                }
+                ScreenMap = temp;
+                int width = 0;
+                int height = 0;
+                PixelInfo pixel = ScreenMap[0];
+                for (int x = 0; x < sizex; x++)
+                {
+                    width += pixel.Width;
+                }
+                for (int x = 0; x < sizey; x++)
+                {
+                    height += pixel.Height;
+                }
+                MapCanvas.Height = height * zoom;
+                MapCanvas.Width = width * zoom;
+                Draw();
+                RemoveSelection();
+            }
         }
     }
 }

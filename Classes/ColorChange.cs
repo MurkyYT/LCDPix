@@ -1,19 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Controls;
-using System.Windows.Media;
+﻿using System.Windows.Media;
 
-namespace LCDPix
+namespace LCDPix.Classes
 {
     internal class ColorChange
     {
-        internal MainWindow.PixelInfo pixelInfo { get; }
+        internal PixelInfo pixelInfo { get; }
         internal Color oldColor { get; }
         internal bool firstTime { get; set; }
-        public ColorChange(MainWindow.PixelInfo pixelInfo, Color oldColor, bool firstTime)
+        public ColorChange(PixelInfo pixelInfo, Color oldColor, bool firstTime)
         {
             this.pixelInfo = pixelInfo;
             this.oldColor = oldColor;
