@@ -750,7 +750,7 @@ namespace LCDPix
                 Mouse.OverrideCursor = null;
                 PixelInfo[] temp = new PixelInfo[ScreenMap.Count];
                 ScreenMap.CopyTo(temp);
-                tabs.Add(new Tab(temp,"untitled", tabs));
+                tabs.Add(new Tab(temp,"untitled", tabs,sizex,sizey));
                 TabControl.Items.Add(new TabItem()
                 {
                     Header = $"untitled",
@@ -793,7 +793,7 @@ namespace LCDPix
                 MapCanvas.Width = width * zoom;
                 PixelInfo[] temp = new PixelInfo[ScreenMap.Count];
                 ScreenMap.CopyTo(temp);
-                tabs.Add(new Tab(temp, Path.GetFileName(filename), tabs));
+                tabs.Add(new Tab(temp, Path.GetFileName(filename), tabs,sizex,sizey));
                 TabControl.Items.Add(new TabItem()
                 {
                     Header = $"{Path.GetFileName(filename)}",
@@ -1505,7 +1505,7 @@ namespace LCDPix
                             Mouse.OverrideCursor = null;
                             PixelInfo[] tempPixels = new PixelInfo[ScreenMap.Count];
                             ScreenMap.CopyTo(tempPixels);
-                            tabs.Add(new Tab(tempPixels, "untitled", tabs));
+                            tabs.Add(new Tab(tempPixels, "untitled", tabs,sizex,sizey));
                             TabControl.Items.Add(new TabItem()
                             {
                                 Header = $"untitled",
@@ -1725,6 +1725,8 @@ namespace LCDPix
                 ScreenMap = temp;
                 int width = 0;
                 int height = 0;
+                sizex = selectedTab.size.X;
+                sizey = selectedTab.size.Y;
                 PixelInfo pixel = ScreenMap[0];
                 for (int x = 0; x < sizex; x++)
                 {
