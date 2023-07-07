@@ -207,6 +207,7 @@ namespace LCDPix
         }
         internal void SetSelection(int line)
         {
+
             // Programmatically change the selection in the RichTextBox.
             Run r = ((Paragraph)richTextBox.Document.Blocks.ElementAt(0)).Inlines.ElementAt(line) as Run;
             TextPointer caretStart = r.ContentStart.GetLineStartPosition(0);
