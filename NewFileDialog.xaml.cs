@@ -36,7 +36,7 @@ namespace LCDPix
         }
         public double PixelSize
         {
-            get { return double.Parse(PixelSizeText.Text.Replace(".",",")); }
+            get { return double.Parse(PixelSizeText.Text.Replace(".", ",")); }
         }
 
         private void PixelSizeText_PreviewTextInput(object sender, TextCompositionEventArgs e)

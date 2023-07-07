@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace LCDPix.Classes
 {
@@ -14,12 +10,12 @@ namespace LCDPix.Classes
         public string name { get; private set; }
         public Point size { get; private set; }
         List<Tab> tabs { get; set; }
-        public ColorChange[] undoStack {get; private set;}
+        public ColorChange[] undoStack { get; private set; }
         public ColorChange[] redoStack { get; private set; }
-        public Tab(PixelInfo[] pixels, string name, List<Tab> tabs,int sizex,int sizey)
+        public Tab(PixelInfo[] pixels, string name, List<Tab> tabs, int sizex, int sizey)
         {
             this.pixels = pixels;
-            this.size = new Point(sizex,sizey);
+            this.size = new Point(sizex, sizey);
             this.index = tabs.Count;
             this.name = name;
             this.tabs = tabs;

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using LCDPix.Classes;
+using System;
 using System.Collections.Generic;
 using System.Drawing.Imaging;
 using System.IO;
-using Path = System.IO.Path;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -13,7 +13,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using LCDPix.Classes;
+using Path = System.IO.Path;
 
 namespace LCDPix
 {
@@ -25,7 +25,7 @@ namespace LCDPix
         static CancellationTokenSource s_cts = new CancellationTokenSource();
         int sizex = 0;
         int sizey = 0;
-        internal ScriptEditor scriptEditorWin = null;
+        internal ScriptEditor scriptEditorWin;
         double zoom = 1;
         string mode = "Drawing";
         bool showGrid = true;
@@ -44,9 +44,11 @@ namespace LCDPix
         internal List<Tab> tabs = new List<Tab>();
         public MainWindow()
         {
+            Console.WriteLine("1");
             InitializeComponent();
+            Console.WriteLine("2");
             SelectedModeText.Text = $"Selected mode: {mode}";
-            ZoomInAmount.Text = $"Zoom: ({Math.Round(zoom*100)}%)";
+            ZoomInAmount.Text = $"Zoom: ({Math.Round(zoom * 100)}%)";
             ShowGridCheck.IsChecked = showGrid;
             Mouse.AddMouseWheelHandler(Screen, ZoomIn);
         }
@@ -162,7 +164,7 @@ namespace LCDPix
             text.AppendLine("[END_LCDPIX]");
             File.WriteAllText(path, text.ToString());
             Title = $"{path} - LCDPix ({sizex},{sizey})";
-            MessageBox.Show($"Done exporting LCDPIXFile to {path}","Export LCDPix",MessageBoxButton.OK,MessageBoxImage.Information);
+            MessageBox.Show($"Done exporting LCDPIXFile to {path}", "Export LCDPix", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         void Draw()
         {
@@ -177,11 +179,11 @@ namespace LCDPix
                 int y = pixel.Y;
                 double opacity = pixel.Opacity;
                 Color fillColor = pixel.FillColor;
-                pixel.PixelRect = DrawRectangle(x, y, Width, Height, fillColor,opacity);
+                pixel.PixelRect = DrawRectangle(x, y, Width, Height, fillColor, opacity);
             }
             Mouse.OverrideCursor = null;
         }
-        Rectangle DrawRectangle(double x, double y, double Width, double Height, Color fiilColor,double opacity = 1)
+        Rectangle DrawRectangle(double x, double y, double Width, double Height, Color fiilColor, double opacity = 1)
         {
             Rectangle rect = new Rectangle()
             {
@@ -190,11 +192,11 @@ namespace LCDPix
                     Opacity = opacity
                 },
                 Stroke = new SolidColorBrush(Colors.Black),
-                StrokeThickness = showGrid? 1 : 0,
+                StrokeThickness = showGrid ? 1 : 0,
                 Width = Width + 1,
                 Height = Height + 1,
                 //IsHitTestVisible = false,
-        };
+            };
             Canvas.SetLeft(rect, x * Width);
             Canvas.SetTop(rect, y * Height);
             Screen.Children.Add(rect);
@@ -213,7 +215,7 @@ namespace LCDPix
                 Width = Width + 1,
                 Height = Height + 1,
                 IsHitTestVisible = false,
-        };
+            };
             Canvas.SetLeft(rect, x);
             Canvas.SetTop(rect, y);
             Screen.Children.Add(rect);
@@ -294,12 +296,12 @@ namespace LCDPix
                     var fillColor = GetPixelColor(e);
                     var pixel = GetPixel(e);
                     if (pixel != null && selectedPixels.Count <= 0)
-                        FloodFill(pixel.X, pixel.Y, pixel.Width, pixel.Height, color, fillColor,true);
-                    else if(pixel != null && selectedPixels.Count > 0)
-                        FloodFill(pixel.X, pixel.Y, pixel.Width, pixel.Height, color, fillColor, true,false);
+                        FloodFill(pixel.X, pixel.Y, pixel.Width, pixel.Height, color, fillColor, true);
+                    else if (pixel != null && selectedPixels.Count > 0)
+                        FloodFill(pixel.X, pixel.Y, pixel.Width, pixel.Height, color, fillColor, true, false);
                     break;
                 case "Area Selection":
-                    if (!firstTime && Mouse.LeftButton == MouseButtonState.Pressed) 
+                    if (!firstTime && Mouse.LeftButton == MouseButtonState.Pressed)
                     {
                         Screen.Children.Remove(selection);
                         Point endingPoint = e;
@@ -315,7 +317,7 @@ namespace LCDPix
                         break;
                     }
                     areaSelectionStartingPoint = e;
-                    if(selectedPixels.Count == 0)
+                    if (selectedPixels.Count == 0)
                         RemoveSelection();
                     break;
                 case "Line":
@@ -323,7 +325,7 @@ namespace LCDPix
                     {
                         Screen.Children.Remove(lineSelection);
                         Point endingPoint = e;
-                        lineSelection = DrawDottedLine(areaSelectionStartingPoint.X, areaSelectionStartingPoint.Y, endingPoint.X-1, endingPoint.Y-1);
+                        lineSelection = DrawDottedLine(areaSelectionStartingPoint.X, areaSelectionStartingPoint.Y, endingPoint.X - 1, endingPoint.Y - 1);
                         break;
                     }
                     areaSelectionStartingPoint = e;
@@ -365,9 +367,9 @@ namespace LCDPix
                     areaSelectionStartingPoint = e;
                     break;
             }
-            
+
         }
-        public void Line(int x, int y, int x2, int y2,bool firstTime)
+        public void Line(int x, int y, int x2, int y2, bool firstTime)
         {
             int w = x2 - x;
             int h = y2 - y;
@@ -388,7 +390,7 @@ namespace LCDPix
             SolidColorBrush newBrush = (SolidColorBrush)nowColor.Background;
             for (int i = 0; i <= longest; i++)
             {
-                PixelInfo pixel = ChangePixelColor(new Point(x,y),Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                PixelInfo pixel = ChangePixelColor(new Point(x, y), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
                 numerator += shortest;
                 if (!(numerator < longest))
                 {
@@ -401,8 +403,8 @@ namespace LCDPix
                     x += dx2;
                     y += dy2;
                 }
-                if(pixel != null)
-                    firstTime = false;  
+                if (pixel != null)
+                    firstTime = false;
             }
         }
         void Ellipse(double rx, double ry,
@@ -426,7 +428,7 @@ namespace LCDPix
             {
 
                 // Print points based on 4-way symmetry
-                PixelInfo pixel = ChangePixelColor(new Point(x+xc, y+yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
+                PixelInfo pixel = ChangePixelColor(new Point(x + xc, y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
                 if (pixel != null)
                     firstTime = false;
                 pixel = ChangePixelColor(new Point(-x + xc, y + yc), Color.FromRgb(newBrush.Color.R, newBrush.Color.G, newBrush.Color.B), firstTime);
@@ -498,16 +500,16 @@ namespace LCDPix
                 }
             }
         }
-        void FloodFill(int x,int y,int width, int height,Color fill,Color old,bool firstTime,bool checkColor = true)
+        void FloodFill(int x, int y, int width, int height, Color fill, Color old, bool firstTime, bool checkColor = true)
         {
             if ((x < 0) || (x >= sizex)) return;
             if ((y < 0) || (y >= sizey)) return;
             if (fill == old) return;
             Point pos = new Point(x * width * zoom + 1, y * height * zoom + 1);
-            if (GetPixelColor(pos)== old && checkColor)
+            if (GetPixelColor(pos) == old && checkColor)
             {
                 ChangePixelColor(pos, fill, firstTime);
-                FloodFill(x + 1, y, width,height,fill,old,false);
+                FloodFill(x + 1, y, width, height, fill, old, false);
                 FloodFill(x, y + 1, width, height, fill, old, false);
                 FloodFill(x - 1, y, width, height, fill, old, false);
                 FloodFill(x, y - 1, width, height, fill, old, false);
@@ -533,7 +535,7 @@ namespace LCDPix
                 PixelInfo pixel = ScreenMap[i];
                 if (FindPoint(pixel.BottomLeft, pixel.TopRight, Position) && pixel.FillColor != color)
                 {
-                    return ChangePixelColor(pixel,color, firstTime);
+                    return ChangePixelColor(pixel, color, firstTime);
                 }
             }
             return null;
@@ -550,9 +552,9 @@ namespace LCDPix
         List<PixelInfo> GetPixelsInArea(Rect rectangle)
         {
             List<PixelInfo> pixels = new List<PixelInfo>();
-            foreach(var pixel in ScreenMap)
+            foreach (var pixel in ScreenMap)
             {
-                if(FindPoint(rectangle,new Point((pixel.X * pixel.Width + pixel.Width / 2)*zoom, (pixel.Y * pixel.Height + pixel.Height / 2) * zoom)))
+                if (FindPoint(rectangle, new Point((pixel.X * pixel.Width + pixel.Width / 2) * zoom, (pixel.Y * pixel.Height + pixel.Height / 2) * zoom)))
                 {
                     pixels.Add(pixel);
                 }
@@ -582,8 +584,8 @@ namespace LCDPix
         }
         PixelInfo GetPixel(Point Position)
         {
-           foreach(var pixel in ScreenMap) 
-            { 
+            foreach (var pixel in ScreenMap)
+            {
                 if (FindPoint(pixel.BottomLeft, pixel.TopRight, Position))
                 {
                     return pixel;
@@ -606,14 +608,14 @@ namespace LCDPix
         bool FindPoint(Point bottomLeft, Point topRight, Point coords)
         {
             if (coords.X >= bottomLeft.X * zoom && coords.X < topRight.X * zoom &&
-                coords.Y  < bottomLeft.Y * zoom && coords.Y  >= topRight.Y * zoom)
+                coords.Y < bottomLeft.Y * zoom && coords.Y >= topRight.Y * zoom)
                 return true;
 
             return false;
         }
         bool FindPoint(Rect rect, Point coords)
         {
-            if (coords.X > rect.BottomLeft.X && coords.X < rect.TopRight.X  &&
+            if (coords.X > rect.BottomLeft.X && coords.X < rect.TopRight.X &&
                 coords.Y < rect.BottomLeft.Y && coords.Y > rect.TopRight.Y)
                 return true;
 
@@ -645,7 +647,7 @@ namespace LCDPix
                 height += pixel.Height;
             }
             // Get the size of canvas
-            Size size = new Size(width,height);
+            Size size = new Size(width, height);
             // Measure and arrange the surface
             // VERY IMPORTANT
             surface.Measure(size);
@@ -687,11 +689,11 @@ namespace LCDPix
         }
         void CheckForChanges()
         {
-            if(undoStack.Count != 0)
+            if (undoStack.Count != 0)
             {
                 string fileName = Title.Split('\\')[Title.Split('\\').Length - 1].Split('.')[0].Replace("*", "");
                 MessageBoxResult result = MessageBox.Show($"There are unsaved changes in {fileName} would you like to save them?", "Warning", MessageBoxButton.YesNo, MessageBoxImage.Warning);
-                if(result == MessageBoxResult.Yes)
+                if (result == MessageBoxResult.Yes)
                 {
                     string fileName2 = Title.Split(new string[] { " - LCDPix" }, StringSplitOptions.None)[0];
                     if (!File.Exists(fileName2))
@@ -750,7 +752,7 @@ namespace LCDPix
                 Mouse.OverrideCursor = null;
                 PixelInfo[] temp = new PixelInfo[ScreenMap.Count];
                 ScreenMap.CopyTo(temp);
-                tabs.Add(new Tab(temp,"untitled", tabs,sizex,sizey));
+                tabs.Add(new Tab(temp, "untitled", tabs, sizex, sizey));
                 TabControl.Items.Add(new TabItem()
                 {
                     Header = $"untitled",
@@ -793,12 +795,12 @@ namespace LCDPix
                 MapCanvas.Width = width * zoom;
                 PixelInfo[] temp = new PixelInfo[ScreenMap.Count];
                 ScreenMap.CopyTo(temp);
-                tabs.Add(new Tab(temp, Path.GetFileName(filename), tabs,sizex,sizey));
+                tabs.Add(new Tab(temp, Path.GetFileName(filename), tabs, sizex, sizey));
                 TabControl.Items.Add(new TabItem()
                 {
                     Header = $"{Path.GetFileName(filename)}",
                 });
-                Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = tabs.Count-1));
+                Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = tabs.Count - 1));
             }
         }
 
@@ -829,7 +831,7 @@ namespace LCDPix
         }
         private void ColorPicker_MouseMove(object sender, MouseEventArgs e)
         {
-            if(e.LeftButton == MouseButtonState.Pressed)
+            if (e.LeftButton == MouseButtonState.Pressed)
                 Select_Color(sender, e);
         }
         private void Select_Color(object sender, MouseEventArgs e)
@@ -933,18 +935,18 @@ namespace LCDPix
                 LeftClick(false, e.MouseDevice.GetPosition(Screen));
             }
         }
-        void ExportImage(string path,ImageFormat format)
+        void ExportImage(string path, ImageFormat format)
         {
             Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
             System.Drawing.Bitmap bmp = BitmapFromWriteableBitmap(SaveAsWriteableBitmap(Screen));
             System.Drawing.Image img = System.Drawing.Image.FromHbitmap(bmp.GetHbitmap());
-            img.Save(path,format);
+            img.Save(path, format);
             foreach (var pixel in ScreenMap)
             {
-                pixel.PixelRect.StrokeThickness = showGrid? 1 : 0;
+                pixel.PixelRect.StrokeThickness = showGrid ? 1 : 0;
             }
             Mouse.OverrideCursor = null;
-            MessageBox.Show($"Done exporting '{path.Split('\\')[path.Split('\\').Length-1].Replace(format.ToString().ToLower(),"")}' as {format.ToString().ToUpper()}","Export Image",MessageBoxButton.OK,MessageBoxImage.Information);
+            MessageBox.Show($"Done exporting '{path.Split('\\')[path.Split('\\').Length - 1].Replace(format.ToString().ToLower(), "")}' as {format.ToString().ToUpper()}", "Export Image", MessageBoxButton.OK, MessageBoxImage.Information);
         }
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
@@ -979,7 +981,7 @@ namespace LCDPix
                         break;
                     firstTime = false;
                 }
-                if(!Title.Contains("*"))
+                if (!Title.Contains("*"))
                     Title += "*";
             }
             if (e.Key == Key.S && Keyboard.IsKeyDown(Key.LeftCtrl))
@@ -999,14 +1001,14 @@ namespace LCDPix
             {
                 NewFile_Click(null, null);
             }
-            if(e.Key == Key.D && Keyboard.IsKeyDown(Key.LeftCtrl))
+            if (e.Key == Key.D && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
                 RemoveSelection();
             }
-            if(e.Key == Key.Delete)
+            if (e.Key == Key.Delete)
             {
                 bool first = true;
-                foreach(var pixel in selectedPixels)
+                foreach (var pixel in selectedPixels)
                 {
                     ChangePixelColor(pixel, Colors.White, first);
                     first = false;
@@ -1096,7 +1098,7 @@ namespace LCDPix
             {
                 // Open document
                 string filename = dialog.FileName;
-                ExportImage(filename,ImageFormat.Png);
+                ExportImage(filename, ImageFormat.Png);
             }
         }
         private void CurosrSelectButton_Click(object sender, RoutedEventArgs e)
@@ -1147,12 +1149,12 @@ namespace LCDPix
                 sizex = myBitmap.Width;
                 sizey = myBitmap.Height;
                 ScreenMap.Clear();
-                for (int x = 0; x < myBitmap.Width; x++) 
-                { 
+                for (int x = 0; x < myBitmap.Width; x++)
+                {
                     for (int y = 0; y < myBitmap.Height; y++)
                     {
                         System.Drawing.Color pixelColor = myBitmap.GetPixel(x, y);
-                        ScreenMap.Add(new PixelInfo(x, y, 5, 5, Color.FromRgb(pixelColor.R, pixelColor.G, pixelColor.B)) { Opacity = pixelColor.A/255 });
+                        ScreenMap.Add(new PixelInfo(x, y, 5, 5, Color.FromRgb(pixelColor.R, pixelColor.G, pixelColor.B)) { Opacity = pixelColor.A / 255 });
                     }
                 }
                 Title = $"{filename} - LCDPix ({sizex},{sizey})";
@@ -1221,21 +1223,21 @@ namespace LCDPix
             undoStack.Clear();
             Screen.Children.Clear();
             ScreenMap.Clear();
-            if (tabs.Count-1 > 0)
+            if (tabs.Count - 1 > 0)
             {
                 int i = 0;
                 int selectedIndex = tabs.IndexOf(selectedTab);
                 if (selectedIndex - 1 >= 0)
                     i = selectedIndex - 1;
-                Title = tabs[i].name;
                 tabs.RemoveAt(selectedIndex);
                 TabControl.Items.RemoveAt(selectedIndex);
                 Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = i));
+                Title = tabs[TabControl.SelectedIndex].name;
                 selectedTab = tabs[i];
                 foreach (var pixel in tabs[i].pixels)
                     ScreenMap.Add(pixel);
             }
-            else if(tabs.Count > 0)
+            else if (tabs.Count > 0)
             {
                 int selectedIndex = tabs.IndexOf(selectedTab);
                 Title = "LCDPix";
@@ -1261,7 +1263,7 @@ namespace LCDPix
                 showGrid = false;
             }
             Draw();
-            if(selection != null)
+            if (selection != null)
                 Screen.Children.Add(selection);
         }
 
@@ -1305,7 +1307,7 @@ namespace LCDPix
                 case "Line":
                     Screen.Children.Remove(lineSelection);
                     endingPoint = e;
-                    Line((int)areaSelectionStartingPoint.X, (int)areaSelectionStartingPoint.Y, (int)endingPoint.X, (int)endingPoint.Y,true);
+                    Line((int)areaSelectionStartingPoint.X, (int)areaSelectionStartingPoint.Y, (int)endingPoint.X, (int)endingPoint.Y, true);
                     areaSelectionStartingPoint = new Point(-1, -1);
                     break;
                 case "Ellipse":
@@ -1331,7 +1333,7 @@ namespace LCDPix
                     //        (bottomRight.X - topLeft.X) * topLeft.Width * zoom,
                     //        (bottomRight.Y - topLeft.Y) * topLeft.Height * zoom);
 
-                    rect = new Rect((topLeft.X+0.5) * topLeft.Width * zoom, (topLeft.Y+0.5) * topLeft.Height * zoom,
+                    rect = new Rect((topLeft.X + 0.5) * topLeft.Width * zoom, (topLeft.Y + 0.5) * topLeft.Height * zoom,
                             (bottomRight.X - topLeft.X) * topLeft.Width * zoom,
                             (bottomRight.Y - topLeft.Y) * topLeft.Height * zoom);
                     Line((int)rect.TopLeft.X, (int)rect.TopLeft.Y, (int)rect.TopRight.X, (int)rect.TopRight.Y, true);
@@ -1411,7 +1413,7 @@ namespace LCDPix
             CancellationToken ct = s_cts.Token;
             ReadLCDPixScript(path, ct);
         }
-        async void ReadLCDPixScript(string path,CancellationToken cancellationToken)
+        async void ReadLCDPixScript(string path, CancellationToken cancellationToken)
         {
             string[] lines = File.ReadAllLines(path);
             int lineNo = 0;
@@ -1423,7 +1425,8 @@ namespace LCDPix
             bool comment = false;
             bool firstTime = true;
             Title = $"{Path.GetFileName(path)} - {path} (LCDPix (Running))";
-            try {
+            try
+            {
                 foreach (string line in lines)
                 {
                     if (cancellationToken.IsCancellationRequested && ScriptRunning)
@@ -1505,7 +1508,7 @@ namespace LCDPix
                             Mouse.OverrideCursor = null;
                             PixelInfo[] tempPixels = new PixelInfo[ScreenMap.Count];
                             ScreenMap.CopyTo(tempPixels);
-                            tabs.Add(new Tab(tempPixels, "untitled", tabs,sizex,sizey));
+                            tabs.Add(new Tab(tempPixels, "untitled", tabs, sizex, sizey));
                             TabControl.Items.Add(new TabItem()
                             {
                                 Header = $"untitled",
@@ -1513,7 +1516,7 @@ namespace LCDPix
                             await Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = tabs.Count - 1));
                             break;
                         case "grid":
-                            if(ScreenMap.Count == 0)
+                            if (ScreenMap.Count == 0)
                                 throw new ArgumentException("File cannot be null");
                             ShowGridCheck.IsChecked = bool.Parse(args[0]);
                             ShowGridCheck_Click(null, null);
@@ -1638,11 +1641,11 @@ namespace LCDPix
                     }
                 }
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 if (scriptEditorWin != null)
                     scriptEditorWin.Subscribe();
-                MessageBox.Show($"Error acurred at line {lineNo}, please check the code\n{ex.Message}","LCDPix script runtime error",MessageBoxButton.OK,MessageBoxImage.Error);
+                MessageBox.Show($"Error acurred at line {lineNo}, please check the code\n{ex.Message}", "LCDPix script runtime error", MessageBoxButton.OK, MessageBoxImage.Error);
                 Title = $"{Path.GetFileName(path)} - {path} (LCDPix (Crashed, line: {lineNo}))";
                 ScriptRunning = false;
             }
@@ -1696,7 +1699,7 @@ namespace LCDPix
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (e.Source is TabControl && tabs.Count >= TabControl.SelectedIndex+1 & tabs.Count != 0 && TabControl.SelectedIndex != -1)
+            if (e.Source is TabControl && tabs.Count >= TabControl.SelectedIndex + 1 & tabs.Count != 0 && TabControl.SelectedIndex != -1)
             {
                 //Add redoStack and undoStack fix
                 Stack<ColorChange> tempUndo = undoStack;
@@ -1705,7 +1708,7 @@ namespace LCDPix
                     selectedTab.UpdateStacks(tempUndo, tempRedo);
                 selectedTab = tabs[TabControl.SelectedIndex];
                 List<PixelInfo> temp = new List<PixelInfo>();
-                foreach(var pixel2 in selectedTab.pixels)
+                foreach (var pixel2 in selectedTab.pixels)
                 {
                     temp.Add(pixel2);
                 }
@@ -1713,7 +1716,7 @@ namespace LCDPix
                 {
                     undoStack.Clear();
                     redoStack.Clear();
-                    for(int i = selectedTab.redoStack.Length-1; i >= 0; i--)
+                    for (int i = selectedTab.redoStack.Length - 1; i >= 0; i--)
                     {
                         redoStack.Push(selectedTab.redoStack[i]);
                     }

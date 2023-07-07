@@ -24,7 +24,7 @@ namespace LCDPix
             richTextBox.AcceptsTab = true;
             richTextBox.AppendText("[LCDIPT]\n// Start of the script\n");
             richTextBox.AppendText("\n\n// End of the script\n[END_LCDIPT]\n");
-            if(fileName != "")
+            if (fileName != "")
             {
                 filePath = fileName;
                 OpenScript();
@@ -35,12 +35,12 @@ namespace LCDPix
         internal string filePath = "";
         private void richTextBox_TextChanged(object sender, TextChangedEventArgs e)
         {
-            if (richTextBox.CanUndo && Title[Title.Length-1] != '*')
+            if (richTextBox.CanUndo && Title[Title.Length - 1] != '*')
                 Title += "*";
-            else if(Title[Title.Length - 1] == '*' && !richTextBox.CanUndo)
+            else if (Title[Title.Length - 1] == '*' && !richTextBox.CanUndo)
                 Title = Title.Remove(Title.Length - 1);
             richTextBox.TextChanged -= richTextBox_TextChanged;
-            if(syntaxHighlight)
+            if (syntaxHighlight)
                 ColorText(richTextBox);
             richTextBox.TextChanged += richTextBox_TextChanged;
         }
@@ -106,7 +106,7 @@ namespace LCDPix
         {
             richTextBox.IsUndoEnabled = false;
             richTextBox.IsUndoEnabled = true;
-            if (Title[Title.Length-1] == '*')
+            if (Title[Title.Length - 1] == '*')
                 Title = Title.Remove(Title.Length - 1);
         }
         internal void NewScript()
@@ -119,7 +119,7 @@ namespace LCDPix
             ClearUndo();
             UpdateCounters();
         }
-        internal void OpenScript() 
+        internal void OpenScript()
         {
             string[] lines = File.ReadAllLines(filePath);
             Paragraph para = new Paragraph();
@@ -141,7 +141,7 @@ namespace LCDPix
                 MessageBoxResult result = MessageBox.Show("Source Must Be Saved\n   OK to Save?", "Save Before Run", MessageBoxButton.OKCancel, MessageBoxImage.Question);
                 if (result == MessageBoxResult.Cancel)
                     return;
-             }
+            }
             bool? fileResult = false;
             if (!File.Exists(filePath))
             {
@@ -165,7 +165,7 @@ namespace LCDPix
                 }
             }
             ClearUndo();
-            if ((fileResult == false && runAfterSave == false)|| !File.Exists(filePath))
+            if ((fileResult == false && runAfterSave == false) || !File.Exists(filePath))
                 return;
             TextRange range;
             FileStream fStream;
@@ -173,7 +173,7 @@ namespace LCDPix
             fStream = new FileStream(filePath, FileMode.Create);
             range.Save(fStream, DataFormats.Text);
             fStream.Close();
-            if(runAfterSave)
+            if (runAfterSave)
                 RunButton_Click(null, null);
         }
         static bool IsDigit(string num)
@@ -191,7 +191,7 @@ namespace LCDPix
                 if (pointer.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.Text)
                 {
                     string textRun = pointer.GetTextInRun(LogicalDirection.Forward);
-                    MatchCollection matches = Regex.Matches(textRun, pattern,RegexOptions.IgnoreCase);
+                    MatchCollection matches = Regex.Matches(textRun, pattern, RegexOptions.IgnoreCase);
                     foreach (Match match in matches)
                     {
                         int startIndex = match.Index;
@@ -220,7 +220,7 @@ namespace LCDPix
                 ((MainWindow)this.Owner).StartScript(filePath);
                 this.Owner.Activate();
             }
-            else if(filePath != "" && !richTextBox.CanUndo && ((MainWindow)this.Owner).ScriptRunning)
+            else if (filePath != "" && !richTextBox.CanUndo && ((MainWindow)this.Owner).ScriptRunning)
             {
                 ((MainWindow)this.Owner).StopScript();
                 ((MainWindow)this.Owner).StartScript(filePath);
@@ -229,7 +229,7 @@ namespace LCDPix
             else
                 PromptForSave(true);
         }
-        
+
         private void OpenFile_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
@@ -265,15 +265,15 @@ namespace LCDPix
 
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if(e.Key == Key.S && Keyboard.IsKeyDown(Key.LeftCtrl))
+            if (e.Key == Key.S && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
                 PromptForSave();
             }
-            else if(e.Key == Key.F5 && Keyboard.IsKeyDown(Key.LeftShift))
+            else if (e.Key == Key.F5 && Keyboard.IsKeyDown(Key.LeftShift))
             {
                 StopButon_Click(null, null);
             }
-            else if(e.Key == Key.N && Keyboard.IsKeyDown(Key.LeftCtrl))
+            else if (e.Key == Key.N && Keyboard.IsKeyDown(Key.LeftCtrl))
             {
                 NewScript();
             }
@@ -354,7 +354,7 @@ namespace LCDPix
             syntaxHighlight = SyntaxHiglightCheck.IsChecked;
             if (filePath == "")
                 ColorBlack();
-            else 
+            else
             {
                 PromptForSave();
                 OpenScript();

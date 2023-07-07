@@ -69,53 +69,45 @@
         <TextBlock x:Name="ZoomInAmount" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="2" Text="Zoom: " HorizontalAlignment="Left"/>
         <TextBlock x:Name="SelectedModeText" VerticalAlignment="Bottom" Grid.Row="3" Grid.Column="2" Text="Selected Mode:" HorizontalAlignment="Left"/>
         <StackPanel  Grid.RowSpan="2" Grid.Row="1" Grid.Column="0" Background="#FFC3BFBF">
-            <Button x:Name="CurosrSelectButton" Click="CurosrSelectButton_Click">
+            <Button x:Name="CurosrSelectButton" Click="CurosrSelectButton_Click" Width="16" Height="16">
                 <Button.Background>
                     <ImageBrush ImageSource="res/cursor-solid.png"/>
                 </Button.Background>
-                <Image Source="res/cursor-solid.png"/>
             </Button>
-            <Button x:Name="EraserSelectButton" Click="EraserSelectButton_Click">
+            <Button x:Name="EraserSelectButton" Click="EraserSelectButton_Click" Height="16">
                 <Button.Background>
                     <ImageBrush ImageSource="res/eraser-icon.png"/>
                 </Button.Background>
-                <Image Source="res/eraser-icon.png"/>
             </Button>
-            <Button x:Name="PipetteSelectorButton" Click="PipetteSelectorButton_Click">
+            <Button x:Name="PipetteSelectorButton" Click="PipetteSelectorButton_Click" Height="16">
                 <Button.Background>
                     <ImageBrush ImageSource="res/pipette-icon.png"/>
                 </Button.Background>
-                <Image Source="res/pipette-icon.png"/>
             </Button>
-            <Button x:Name="FillSelectorButton" Click="FillSelectorButton_Click">
+            <Button x:Name="FillSelectorButton" Click="FillSelectorButton_Click" Height="16">
                 <Button.Background>
                     <ImageBrush ImageSource="res/fill-icon.png"/>
                 </Button.Background>
-                <Image Source="res/fill-icon.png"/>
             </Button>
-            <Button x:Name="AreaSelectionButton" Click="AreaSelectionButton_Click">
+            <Button x:Name="AreaSelectionButton" Click="AreaSelectionButton_Click" Height="16">
                 <Button.Background>
                     <ImageBrush ImageSource="res/selection.png"/>
                 </Button.Background>
-                <Image Source="res/selection.png" Width="12" Height="12"/>
             </Button>
-            <Button x:Name="LineSelectionButton" Click="LineSelectionButton_Click">
+            <Button x:Name="LineSelectionButton" Click="LineSelectionButton_Click" Height="16">
                 <Button.Background>
                     <ImageBrush ImageSource="res/line-icon.png"/>
                 </Button.Background>
-                <Image Source="res/line-icon.png" Width="12" Height="12"/>
             </Button>
-            <Button x:Name="EllipseSelectionButton" Click="EllipseSelectionButton_Click">
+            <Button x:Name="EllipseSelectionButton" Click="EllipseSelectionButton_Click" Height="16">
                 <Button.Background>
                     <ImageBrush ImageSource="res/ellipse-icon.png"/>
                 </Button.Background>
-                <Image Source="res/ellipse-icon.png" Width="12" Height="12"/>
             </Button>
-            <Button x:Name="RectangleSelectionButton" Click="RectangleSelectionButton_Click">
+            <Button x:Name="RectangleSelectionButton" Click="RectangleSelectionButton_Click" Height="16">
                 <Button.Background>
                     <ImageBrush ImageSource="res/rectangle-icon.png"/>
                 </Button.Background>
-                <Image Source="res/rectangle-icon.png" Width="12" Height="12"/>
             </Button>
         </StackPanel>
     </Grid>
