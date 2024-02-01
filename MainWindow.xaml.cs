@@ -44,9 +44,7 @@ namespace LCDPix
         internal List<Tab> tabs = new List<Tab>();
         public MainWindow()
         {
-            Console.WriteLine("1");
             InitializeComponent();
-            Console.WriteLine("2");
             SelectedModeText.Text = $"Selected mode: {mode}";
             ZoomInAmount.Text = $"Zoom: ({Math.Round(zoom * 100)}%)";
             ShowGridCheck.IsChecked = showGrid;
@@ -169,7 +167,7 @@ namespace LCDPix
         void Draw()
         {
             Screen.Children.Clear();
-            Mouse.OverrideCursor = System.Windows.Input.Cursors.Wait;
+            Mouse.OverrideCursor = Cursors.Wait;
             for (int i = 0; i < ScreenMap.Count; i++)
             {
                 PixelInfo pixel = ScreenMap[i];
@@ -1232,7 +1230,8 @@ namespace LCDPix
                 tabs.RemoveAt(selectedIndex);
                 TabControl.Items.RemoveAt(selectedIndex);
                 Dispatcher.BeginInvoke((Action)(() => TabControl.SelectedIndex = i));
-                Title = tabs[TabControl.SelectedIndex].name;
+                Tab selected = tabs[TabControl.SelectedIndex];
+                Title = $"{selected.name} - LCDPix ({selected.size.X},{selected.size.Y})";
                 selectedTab = tabs[i];
                 foreach (var pixel in tabs[i].pixels)
                     ScreenMap.Add(pixel);
@@ -1742,6 +1741,7 @@ namespace LCDPix
                 MapCanvas.Height = height * zoom;
                 MapCanvas.Width = width * zoom;
                 Draw();
+                Title = $"{selectedTab.name} - LCDPix ({sizex},{sizey})";
                 RemoveSelection();
             }
         }
